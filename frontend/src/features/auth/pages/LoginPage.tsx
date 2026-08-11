@@ -1,12 +1,25 @@
 import { useState } from "react";
-import { Shield, Mail, Lock, Globe } from "lucide-react";
+import { Shield, Mail, Lock, Globe, ChevronLeft } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 
 export default function LoginPage() {
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    navigate('/app/dashboard');
+  };
   return (
-    <div className="min-h-screen flex" style={{ fontFamily: "'Inter', sans-serif" }}>
-      <div className="hidden lg:block flex-1 relative">
+    <div className="h-screen overflow-hidden flex" style={{ fontFamily: "'Inter', sans-serif" }}>
+      <div className="hidden lg:block lg:w-1/2 relative slide-in-left">
+        <Link to="/" className="absolute top-8 left-8 z-10 flex items-center gap-2.5 hover:opacity-90 transition-opacity">
+          <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center shadow-lg">
+            <Shield size={16} className="text-white" />
+          </div>
+          <span className="font-bold text-white text-lg drop-shadow-md">ScamShield</span>
+        </Link>
         <img
           src="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=900&h=1080&fit=crop&auto=format"
           alt="Cybersecurity"
@@ -31,8 +44,11 @@ export default function LoginPage() {
           </div>
         </div>
       </div>
-      <div className="flex-1 flex items-center justify-center px-6 bg-slate-50">
-        <div className="w-full max-w-md">
+      <div className="w-full lg:w-1/2 flex items-center justify-center px-6 bg-slate-50 overflow-y-auto slide-in-right">
+        <div className="w-full max-w-md my-auto py-12 lg:py-0">
+          <Link to="/" className="flex items-center gap-2 text-sm text-slate-500 hover:text-slate-700 mb-6 transition-colors w-fit">
+            <ChevronLeft size={16} /> Back to Home
+          </Link>
           <div className="flex items-center gap-2 mb-8 lg:hidden">
             <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
               <Shield size={16} className="text-white" />
@@ -42,7 +58,7 @@ export default function LoginPage() {
           <h1 className="text-2xl font-extrabold text-slate-900 mb-1">Sign In</h1>
           <p className="text-slate-500 text-sm mb-8">Enter your credentials to access your account</p>
           <div className="bg-white rounded-2xl border border-border p-8 shadow-sm">
-            <div className="space-y-5">
+            <form className="space-y-6" onSubmit={handleSubmit}>
               <div>
                 <label className="block text-sm font-semibold text-slate-700 mb-1.5">Email Address</label>
                 <div className="relative">
@@ -71,7 +87,7 @@ export default function LoginPage() {
               >
                 Sign In
               </button>
-            </div>
+            </form>
             <div className="mt-5 relative flex items-center">
               <div className="flex-1 border-t border-border" />
               <span className="px-3 text-xs text-slate-400">or continue with</span>
@@ -83,10 +99,10 @@ export default function LoginPage() {
           </div>
           <p className="mt-5 text-center text-sm text-slate-500">
             {"Don't have an account? "}
-            <button className="text-blue-600 font-semibold hover:text-blue-700">Create Account</button>
+            <Link to="/signup" className="text-blue-600 font-semibold hover:text-blue-700">Create Account</Link>
           </p>
           <p className="mt-3 text-center text-xs text-slate-400">
-            <button className="text-slate-400 hover:text-slate-600 underline">Admin access</button>
+            <button onClick={() => navigate('/admin/overview')} className="text-slate-400 hover:text-slate-600 underline">Admin access</button>
           </p>
         </div>
       </div>

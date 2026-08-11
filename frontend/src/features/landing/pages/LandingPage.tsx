@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Shield, AlertTriangle, Database, Flag, CheckCircle, ChevronRight, ArrowRight, Menu, X } from "lucide-react";
+import { Link } from "react-router-dom";
 
 // Mock Data
 const stats = [
@@ -62,29 +63,6 @@ export default function LandingPage() {
 
   return (
     <div style={{ fontFamily: "'Inter', sans-serif" }} className="min-h-screen bg-white">
-      {/* Nav */}
-      <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-border">
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-              <Shield size={16} className="text-white" />
-            </div>
-            <span className="font-bold text-slate-900">ScamShield</span>
-          </div>
-          <div className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-600">
-            <button className="hover:text-blue-600 transition-colors">Scam Database</button>
-            <button className="hover:text-blue-600 transition-colors">Articles</button>
-            <a href="#how" className="hover:text-blue-600 transition-colors">How It Works</a>
-          </div>
-          <div className="hidden md:flex items-center gap-3">
-            <button className="text-sm font-medium text-slate-700 px-4 py-2 rounded-lg hover:bg-slate-50 transition-colors">Log In</button>
-            <button className="text-sm font-medium text-white bg-blue-600 px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">Sign Up</button>
-          </div>
-          <button className="md:hidden" onClick={() => setMobileOpen(!mobileOpen)}>
-            {mobileOpen ? <X size={20} /> : <Menu size={20} />}
-          </button>
-        </div>
-      </nav>
 
       {/* Hero */}
       <section className="relative bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 overflow-hidden">
@@ -105,16 +83,18 @@ export default function LandingPage() {
               Report scams, verify suspicious activities, and protect your community from fraud and cybercrime.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-              <button
+              <Link
+                to="/report"
                 className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-8 py-3.5 rounded-xl font-semibold text-sm transition-all shadow-lg shadow-blue-900/40"
               >
                 <Flag size={16} /> Report a Scam
-              </button>
-              <button
+              </Link>
+              <Link
+                to="/database"
                 className="flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white px-8 py-3.5 rounded-xl font-semibold text-sm transition-all backdrop-blur"
               >
                 <Database size={16} /> Browse Scam Database
-              </button>
+              </Link>
             </div>
           </div>
           <div className="flex-1 hidden lg:block">
@@ -165,9 +145,10 @@ export default function LandingPage() {
             <p className="text-slate-500 max-w-xl mx-auto">Our streamlined process makes it easy to report scams and protect your community in three simple steps.</p>
           </div>
           <div className="grid md:grid-cols-3 gap-8 relative">
-            <div className="hidden md:block absolute top-14 left-[38%] w-[24%] h-px bg-gradient-to-r from-blue-200 to-blue-200 border-dashed border-t-2 border-blue-200" />
+            {/* The dotted line connecting the steps */}
+            <div className="hidden md:block absolute top-14 left-[16%] w-[68%] h-px border-dashed border-t-2 border-blue-200 z-0" />
             {steps.map(({ n, title, desc }) => (
-              <div key={n} className="flex flex-col items-center text-center">
+              <div key={n} className="flex flex-col items-center text-center relative z-10">
                 <div className="w-16 h-16 bg-blue-600 text-white rounded-2xl flex items-center justify-center text-xl font-extrabold mb-5 shadow-lg shadow-blue-200">
                   {n}
                 </div>
@@ -186,12 +167,12 @@ export default function LandingPage() {
           <h2 className="text-3xl font-extrabold text-white mb-4">Help Us Fight Scams Together</h2>
           <p className="text-blue-100 mb-8 leading-relaxed">Join over 2.4 million Filipinos who report scams and protect their communities every day.</p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button className="bg-white text-blue-700 font-bold px-8 py-3.5 rounded-xl hover:bg-blue-50 transition-colors">
+            <Link to="/signup" className="bg-white text-blue-700 font-bold px-8 py-3.5 rounded-xl hover:bg-blue-50 transition-colors text-center">
               Create Free Account
-            </button>
-            <button className="border-2 border-white/40 text-white font-semibold px-8 py-3.5 rounded-xl hover:bg-white/10 transition-colors">
+            </Link>
+            <Link to="/report" className="border-2 border-white/40 text-white font-semibold px-8 py-3.5 rounded-xl hover:bg-white/10 transition-colors text-center">
               Report Anonymously
-            </button>
+            </Link>
           </div>
         </div>
       </section>
