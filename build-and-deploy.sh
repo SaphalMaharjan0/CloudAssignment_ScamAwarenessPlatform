@@ -3,7 +3,7 @@
 # Exit on any error
 set -e
 
-echo "Starting Build Process for ScamShield..."
+echo "Starting Build Process for FraudGuard..."
 
 echo "========================================="
 echo "1. Building React Frontend"

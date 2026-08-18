@@ -185,7 +185,7 @@ export default function LandingPage() {
               <div className="w-7 h-7 bg-blue-600 rounded-lg flex items-center justify-center">
                 <Shield size={14} className="text-white" />
               </div>
-              <span className="font-bold text-white text-sm">ScamShield PH</span>
+              <span className="font-bold text-white text-sm">FraudGuard</span>
             </div>
             <p className="text-sm leading-relaxed">Protecting Filipinos from online scams and cybercrime since 2020.</p>
           </div>
@@ -203,7 +203,7 @@ export default function LandingPage() {
           ))}
         </div>
         <div className="max-w-7xl mx-auto px-6 mt-10 pt-6 border-t border-slate-800 text-xs text-slate-600">
-          © 2024 ScamShield Philippines. An initiative by the Philippine Cybercrime Investigation and Coordinating Center.
+          © 2024 FraudGuardilippines. An initiative by the Philippine Cybercrime Investigation and Coordinating Center.
         </div>
       </footer>
     </div>

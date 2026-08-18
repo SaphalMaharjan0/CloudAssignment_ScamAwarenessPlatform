@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Shield, Mail, Lock, Phone, ChevronLeft, Check } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../../../context/AuthContext";
 
 function cn(...classes: (string | boolean | undefined)[]) {
   return classes.filter(Boolean).join(" ");
@@ -8,11 +9,37 @@ function cn(...classes: (string | boolean | undefined)[]) {
 
 export default function RegisterPage() {
   const navigate = useNavigate();
+  const { register } = useAuth();
   const [agreed, setAgreed] = useState(false);
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    navigate("/app/dashboard");
+    if (!agreed) {
+      setError("You must agree to the Terms of Service and Privacy Policy.");
+      return;
+    }
+    if (password !== confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
+    setError("");
+    setIsLoading(true);
+    try {
+      await register({ firstName, lastName, email, phone, password });
+      navigate("/app/dashboard");
+    } catch (err: any) {
+      setError(err.response?.data?.message || "Registration failed. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -22,7 +49,7 @@ export default function RegisterPage() {
           <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center shadow-lg">
             <Shield size={16} className="text-white" />
           </div>
-          <span className="font-bold text-white text-lg drop-shadow-md">ScamShield</span>
+          <span className="font-bold text-white text-lg drop-shadow-md">FraudGuard</span>
         </Link>
         <img
           src="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=900&h=1080&fit=crop&auto=format"
@@ -34,7 +61,7 @@ export default function RegisterPage() {
           <div className="w-16 h-16 bg-white/20 backdrop-blur rounded-2xl flex items-center justify-center mb-6">
             <Shield size={28} className="text-white" />
           </div>
-          <h2 className="text-3xl font-extrabold text-white mb-4">Join ScamShield Today</h2>
+          <h2 className="text-3xl font-extrabold text-white mb-4">Join FraudGuard Today</h2>
           <p className="text-blue-200 leading-relaxed max-w-sm">
             Help protect the Filipino community by reporting scams and verifying suspicious activities.
           </p>
@@ -57,49 +84,54 @@ export default function RegisterPage() {
             <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
               <Shield size={16} className="text-white" />
             </div>
-            <span className="font-bold text-slate-900">ScamShield</span>
+            <span className="font-bold text-slate-900">FraudGuard</span>
           </div>
           <h1 className="text-2xl font-extrabold text-slate-900 mb-1">Create Your Account</h1>
           <p className="text-slate-500 text-sm mb-8">Join the community protecting Filipinos from online scams</p>
           
           <div className="bg-white rounded-2xl border border-border p-8 shadow-sm">
+            {error && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm text-center">
+                {error}
+              </div>
+            )}
             <form className="space-y-4" onSubmit={handleSubmit}>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-semibold text-slate-700 mb-1.5">First Name</label>
-                  <input className="w-full px-3 py-2.5 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" placeholder="Maria" />
+                  <input value={firstName} onChange={(e) => setFirstName(e.target.value)} required className="w-full px-3 py-2.5 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" placeholder="Maria" />
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-slate-700 mb-1.5">Last Name</label>
-                  <input className="w-full px-3 py-2.5 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" placeholder="Santos" />
+                  <input value={lastName} onChange={(e) => setLastName(e.target.value)} required className="w-full px-3 py-2.5 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" placeholder="Santos" />
                 </div>
               </div>
               <div>
                 <label className="block text-sm font-semibold text-slate-700 mb-1.5">Email Address</label>
                 <div className="relative">
                   <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                  <input className="w-full pl-9 pr-4 py-2.5 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" placeholder="maria@example.com" type="email" />
+                  <input value={email} onChange={(e) => setEmail(e.target.value)} required className="w-full pl-9 pr-4 py-2.5 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" placeholder="maria@example.com" type="email" />
                 </div>
               </div>
               <div>
                 <label className="block text-sm font-semibold text-slate-700 mb-1.5">Phone Number</label>
                 <div className="relative">
                   <Phone size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                  <input className="w-full pl-9 pr-4 py-2.5 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" placeholder="+63 912 345 6789" type="tel" />
+                  <input value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full pl-9 pr-4 py-2.5 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" placeholder="+63 912 345 6789" type="tel" />
                 </div>
               </div>
               <div>
                 <label className="block text-sm font-semibold text-slate-700 mb-1.5">Password</label>
                 <div className="relative">
                   <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                  <input className="w-full pl-9 pr-4 py-2.5 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" placeholder="At least 8 characters" type="password" />
+                  <input value={password} onChange={(e) => setPassword(e.target.value)} required className="w-full pl-9 pr-4 py-2.5 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" placeholder="At least 8 characters" type="password" />
                 </div>
               </div>
               <div>
                 <label className="block text-sm font-semibold text-slate-700 mb-1.5">Confirm Password</label>
                 <div className="relative">
                   <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                  <input className="w-full pl-9 pr-4 py-2.5 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" placeholder="Repeat your password" type="password" />
+                  <input value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required className="w-full pl-9 pr-4 py-2.5 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" placeholder="Repeat your password" type="password" />
                 </div>
               </div>
               <label className="flex items-start gap-3 cursor-pointer">
@@ -120,9 +152,11 @@ export default function RegisterPage() {
                 </span>
               </label>
               <button
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl text-sm transition-colors"
+                type="submit"
+                disabled={isLoading}
+                className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-semibold py-3 rounded-xl text-sm transition-colors flex justify-center items-center gap-2"
               >
-                Create Account
+                {isLoading ? "Creating Account..." : "Create Account"}
               </button>
             </form>
           </div>

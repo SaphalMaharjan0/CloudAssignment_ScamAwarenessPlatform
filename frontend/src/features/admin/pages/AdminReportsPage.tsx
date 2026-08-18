@@ -1,22 +1,58 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Search, Filter, Download, Eye, CheckCircle2, XCircle, ShieldAlert, ChevronRight, ChevronLeft, Clock } from 'lucide-react';
 import { Link } from 'react-router-dom';
-
-const mockReports = [
-  { id: 'RPT-2024-0904', title: 'Fake SSS Website Collecting Credentia', category: 'Fake Website', reporter: 'Carlos Tan', initial: 'C', date: 'Dec 22, 2024', priority: 'High', status: 'Pending' },
-  { id: 'RPT-2024-0903', title: 'GCash QR Code Swap at Palengke', category: 'Banking Scam', reporter: 'Elena Bautista', initial: 'E', date: 'Dec 22, 2024', priority: 'High', status: 'Pending' },
-  { id: 'RPT-2024-0902', title: 'Telegram Ponzi Investment Scheme', category: 'Investment Scam', reporter: 'Roberto Cruz', initial: 'R', date: 'Dec 21, 2024', priority: 'Medium', status: 'Pending' },
-  { id: 'RPT-2024-0901', title: 'Fake PLDT Customer Service Hotline', category: 'Phishing', reporter: 'Ana Reyes', initial: 'A', date: 'Dec 21, 2024', priority: 'Medium', status: 'Verified' },
-  { id: 'RPT-2024-0900', title: 'Instagram Influencer Giveaway Scam', category: 'Social Media Scam', reporter: 'Juan Santos', initial: 'J', date: 'Dec 20, 2024', priority: 'Low', status: 'Verified' },
-  { id: 'RPT-2024-0899', title: 'BDO Online Banking Phishing Email', category: 'Phishing', reporter: 'Maria Santos', initial: 'M', date: 'Dec 20, 2024', priority: 'High', status: 'Verified' },
-  { id: 'RPT-2024-0898', title: 'Fake Shopee Seller Advance Payment', category: 'Fake Website', reporter: 'Rico Delos Santos', initial: 'R', date: 'Dec 19, 2024', priority: 'Low', status: 'Rejected' },
-  { id: 'RPT-2024-0897', title: 'Overseas Job Placement Scam via Viber', category: 'Fake Job', reporter: 'Liza Coronel', initial: 'L', date: 'Dec 19, 2024', priority: 'High', status: 'Verified' },
-  { id: 'RPT-2024-0896', title: 'Lottery Prize SMS Scam', category: 'SMS Scam', reporter: 'Bernard Tan', initial: 'B', date: 'Dec 18, 2024', priority: 'Medium', status: 'Pending' },
-  { id: 'RPT-2024-0895', title: 'Fake Government AICS Cash Aid', category: 'Phishing', reporter: 'Grace Villanueva', initial: 'G', date: 'Dec 18, 2024', priority: 'High', status: 'Verified' },
-];
+import { scamReportApi } from '../../../api/scamReportApi';
+import { adminApi } from '../../../api/adminApi';
+import { ScamReport } from '../../../types/scamReport.types';
 
 export default function AdminReportsPage() {
   const [searchTerm, setSearchTerm] = useState('');
+  const [reports, setReports] = useState<ScamReport[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const fetchReports = async () => {
+    try {
+      const data = await scamReportApi.getReports();
+      // Sort to show pending first, then by date desc
+      data.sort((a, b) => {
+        if (a.status === 'Pending' && b.status !== 'Pending') return -1;
+        if (a.status !== 'Pending' && b.status === 'Pending') return 1;
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      });
+      setReports(data);
+    } catch (error) {
+      console.error("Failed to fetch reports", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchReports();
+  }, []);
+
+  const handleApprove = async (id: string) => {
+    try {
+      await adminApi.updateReportStatus(id, 'Verified');
+      fetchReports();
+    } catch (error) {
+      console.error("Failed to approve report", error);
+    }
+  };
+
+  const handleReject = async (id: string) => {
+    try {
+      await adminApi.updateReportStatus(id, 'Rejected');
+      fetchReports();
+    } catch (error) {
+      console.error("Failed to reject report", error);
+    }
+  };
+
+  const filteredReports = reports.filter(r => 
+    r.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    r.id.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <div className="p-6 md:p-8 max-w-[1400px] mx-auto space-y-6 pb-20" style={{ fontFamily: "'Inter', sans-serif" }}>
@@ -25,7 +61,7 @@ export default function AdminReportsPage() {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">All Reports</h1>
-          <p className="text-slate-500 mt-1 text-sm">10 total reports in the system</p>
+          <p className="text-slate-500 mt-1 text-sm">{reports.length} total reports in the system</p>
         </div>
         <button className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-700 rounded-lg text-sm font-semibold hover:bg-slate-50 transition-colors shadow-sm">
           <Download size={16} /> Export CSV
@@ -79,7 +115,11 @@ export default function AdminReportsPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {mockReports.map((report) => (
+              {isLoading ? (
+                <tr><td colSpan={8} className="p-8 text-center text-slate-500">Loading reports...</td></tr>
+              ) : filteredReports.length === 0 ? (
+                <tr><td colSpan={8} className="p-8 text-center text-slate-500">No reports found</td></tr>
+              ) : filteredReports.map((report) => (
                 <tr key={report.id} className="hover:bg-slate-50 transition-colors">
                   <td className="p-4 text-center">
                     <input type="checkbox" className="rounded border-slate-300 text-blue-600 focus:ring-blue-500" />
@@ -90,25 +130,25 @@ export default function AdminReportsPage() {
                   </td>
                   <td className="p-4">
                     <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-100 whitespace-nowrap">
-                      <ShieldAlert size={12} /> {report.category}
+                      <ShieldAlert size={12} /> {report.category?.name || report.category}
                     </span>
                   </td>
                   <td className="p-4">
                     <div className="flex items-center gap-2">
-                      <div className="w-6 h-6 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center text-[10px] font-bold">
-                        {report.initial}
+                      <div className="w-6 h-6 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center text-[10px] font-bold uppercase">
+                        {report.reporter?.firstName?.[0] || '?'}
                       </div>
-                      <span className="text-sm text-slate-700 font-medium whitespace-nowrap">{report.reporter}</span>
+                      <span className="text-sm text-slate-700 font-medium whitespace-nowrap">{report.reporter?.firstName} {report.reporter?.lastName}</span>
                     </div>
                   </td>
-                  <td className="p-4 text-sm text-slate-500 whitespace-nowrap">{report.date}</td>
+                  <td className="p-4 text-sm text-slate-500 whitespace-nowrap">{new Date(report.createdAt).toLocaleDateString()}</td>
                   <td className="p-4">
                     <span className={`inline-block px-2.5 py-1 rounded-full text-[11px] font-bold border ${
                       report.priority === 'High' ? 'bg-red-50 text-red-700 border-red-200' :
                       report.priority === 'Medium' ? 'bg-amber-50 text-amber-700 border-amber-200' :
                       'bg-slate-100 text-slate-600 border-slate-200'
                     }`}>
-                      {report.priority}
+                      {report.priority || 'Medium'}
                     </span>
                   </td>
                   <td className="p-4">
@@ -125,15 +165,19 @@ export default function AdminReportsPage() {
                   </td>
                   <td className="p-4">
                     <div className="flex items-center justify-center gap-2">
-                      <Link to={`/admin/verify/${report.id.replace('RPT-2024-', '')}`} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="View Details">
+                      <Link to={`/admin/verify/${report.id.replace('RPT-', '')}`} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="View Details">
                         <Eye size={16} />
                       </Link>
-                      <button className="p-1.5 text-green-600 hover:bg-green-50 rounded-lg transition-colors" title="Approve">
-                        <CheckCircle2 size={16} />
-                      </button>
-                      <button className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Reject">
-                        <XCircle size={16} />
-                      </button>
+                      {report.status === 'Pending' && (
+                        <>
+                          <button onClick={() => handleApprove(report.id)} className="p-1.5 text-green-600 hover:bg-green-50 rounded-lg transition-colors" title="Approve">
+                            <CheckCircle2 size={16} />
+                          </button>
+                          <button onClick={() => handleReject(report.id)} className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Reject">
+                            <XCircle size={16} />
+                          </button>
+                        </>
+                      )}
                     </div>
                   </td>
                 </tr>
@@ -144,16 +188,7 @@ export default function AdminReportsPage() {
 
         {/* Pagination */}
         <div className="p-4 border-t border-slate-100 flex items-center justify-between text-sm text-slate-500">
-          <div>Showing 10 of 10 reports</div>
-          <div className="flex items-center gap-1">
-            <button className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 text-slate-400"><ChevronLeft size={16} /></button>
-            <button className="w-8 h-8 flex items-center justify-center rounded-lg bg-blue-600 text-white font-bold">1</button>
-            <button className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 font-medium text-slate-700">2</button>
-            <button className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 font-medium text-slate-700">3</button>
-            <span className="px-1">...</span>
-            <button className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 font-medium text-slate-700">8</button>
-            <button className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 text-slate-600"><ChevronRight size={16} /></button>
-          </div>
+          <div>Showing {filteredReports.length} reports</div>
         </div>
       </div>
     </div>

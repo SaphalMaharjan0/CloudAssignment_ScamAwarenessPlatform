@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { 
   Shield, 
@@ -16,10 +16,34 @@ import {
   CheckCircle,
   FileCheck
 } from 'lucide-react';
+import { adminApi } from '../api/adminApi';
+import { notificationApi } from '../api/notificationApi';
 
 export default function AdminLayout() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [pendingCount, setPendingCount] = useState(0);
+  const [unreadCount, setUnreadCount] = useState(0);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchCounts = async () => {
+      try {
+        const stats = await adminApi.getStats();
+        setPendingCount(stats.pendingReports || 0);
+
+        const notifs = await notificationApi.getNotifications();
+        // Assume admin notifications or just all unread
+        setUnreadCount(notifs.filter(n => !n.isRead).length);
+      } catch (error) {
+        console.error("Failed to load layout stats", error);
+      }
+    };
+    fetchCounts();
+    
+    // Optional: Set an interval to refresh counts every minute
+    const intervalId = setInterval(fetchCounts, 60000);
+    return () => clearInterval(intervalId);
+  }, []);
 
   const handleLogout = () => {
     navigate('/login');
@@ -33,7 +57,7 @@ export default function AdminLayout() {
     }`;
 
   return (
-    <div className="min-h-screen bg-slate-50 flex" style={{ fontFamily: "'Inter', sans-serif" }}>
+    <div className="flex h-screen bg-slate-50 overflow-hidden" style={{ fontFamily: "'Inter', sans-serif" }}>
       
       {/* Mobile Sidebar Overlay */}
       {mobileMenuOpen && (
@@ -55,7 +79,7 @@ export default function AdminLayout() {
               <Shield size={16} className="text-white" />
             </div>
             <div className="flex flex-col">
-              <span className="font-bold text-slate-900 leading-none">ScamShield</span>
+              <span className="font-bold text-slate-900 leading-none">FraudGuard</span>
               <span className="text-[10px] font-bold text-blue-600 tracking-wider mt-1">ADMIN</span>
             </div>
           </NavLink>
@@ -76,7 +100,9 @@ export default function AdminLayout() {
               <NavLink to="/admin/verify" className={navLinkClasses}>
                 <FileCheck size={18} /> 
                 <span className="flex-1">Verification Queue</span>
-                <span className="bg-amber-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">247</span>
+                {pendingCount > 0 && (
+                  <span className="bg-amber-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">{pendingCount}</span>
+                )}
               </NavLink>
               <NavLink to="/admin/reports" className={navLinkClasses}>
                 <FileText size={18} /> All Reports
@@ -105,7 +131,9 @@ export default function AdminLayout() {
               <NavLink to="/admin/notifications" className={navLinkClasses}>
                 <Bell size={18} /> 
                 <span className="flex-1">Notifications</span>
-                <span className="bg-red-500 text-white text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full">3</span>
+                {unreadCount > 0 && (
+                  <span className="bg-red-500 text-white text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full">{unreadCount}</span>
+                )}
               </NavLink>
               <NavLink to="/admin/settings" className={navLinkClasses}>
                 <Settings size={18} /> Settings
@@ -153,7 +181,9 @@ export default function AdminLayout() {
           <div className="flex items-center gap-4">
             <button onClick={() => navigate('/admin/notifications')} className="p-2 text-slate-500 hover:bg-slate-50 rounded-full transition-colors relative">
               <Bell size={20} />
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
+              {unreadCount > 0 && (
+                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
+              )}
             </button>
             <div onClick={() => navigate('/admin/profile')} className="flex items-center gap-3 cursor-pointer p-1 pr-3 rounded-full hover:bg-slate-50 transition-colors">
               <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold shadow-sm">

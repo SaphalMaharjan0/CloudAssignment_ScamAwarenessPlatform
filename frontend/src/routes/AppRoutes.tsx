@@ -34,6 +34,7 @@ export default function AppRoutes() {
       <Route path="/app" element={<DashboardLayout />}>
         <Route path="dashboard" element={<UserDashboardPage />} />
         <Route path="report" element={<ReportScamPage />} />
+        <Route path="report/:id" element={<ReportScamPage />} />
         <Route path="my-reports" element={<MyReportsPage />} />
         <Route path="database" element={<ScamDatabasePage />} />
         <Route path="database/:id" element={<ScamDetailsPage />} />

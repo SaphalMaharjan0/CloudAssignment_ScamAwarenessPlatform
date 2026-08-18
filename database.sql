@@ -1,4 +1,4 @@
--- ScamShield Database Schema
+-- FraudGuard Database Schema
 
 -- Users Table
 CREATE TABLE users (
@@ -98,4 +98,4 @@ INSERT INTO categories (name) VALUES
 
 -- Insert initial Admin user (password should be hashed in production)
 INSERT INTO users (name, email, password_hash, role, is_verified) 
-VALUES ('System Admin', 'admin@scamshield.gov.ph', 'hashed_password_here', 'Admin', TRUE);
+VALUES ('System Admin', 'admin@FraudGuard.gov.ph', 'hashed_password_here', 'Admin', TRUE);

@@ -1,25 +1,110 @@
-import React, { useState } from 'react';
-import { Search, Plus, CheckCircle2, UserCircle, Users, AlertTriangle, ShieldCheck, Edit2, Ban, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
-
-const mockUsers = [
-  { id: '#1001', name: 'Maria Santos', email: 'maria.santos@gmail.com', phone: '+63 917 234 5678', role: 'Reporter', reports: 12, joined: 'Jan 15, 2023', status: 'Active', verified: true, initial: 'MS' },
-  { id: '#1002', name: 'Juan dela Cruz', email: 'jdelacruz@yahoo.com', phone: '+63 918 345 6789', role: 'Reporter', reports: 8, joined: 'Mar 3, 2023', status: 'Active', verified: true, initial: 'JC' },
-  { id: '#1003', name: 'Ana Reyes', email: 'ana.reyes@gmail.com', phone: '+63 919 456 7890', role: 'Moderator', reports: 34, joined: 'Feb 10, 2023', status: 'Active', verified: true, initial: 'AR' },
-  { id: '#1004', name: 'Roberto Cruz', email: 'r.cruz@hotmail.com', phone: '+63 920 567 8901', role: 'Reporter', reports: 2, joined: 'May 22, 2023', status: 'Suspended', verified: false, initial: 'RC' },
-  { id: '#1005', name: 'Elena Bautista', email: 'elena.b@gmail.com', phone: '+63 921 678 9012', role: 'Reporter', reports: 19, joined: 'Jun 7, 2023', status: 'Active', verified: true, initial: 'EB' },
-  { id: '#1006', name: 'Carlos Mendoza', email: 'c.mendoza@gmail.com', phone: '+63 922 789 0123', role: 'Admin', reports: 0, joined: 'Jan 1, 2023', status: 'Active', verified: true, initial: 'CM' },
-  { id: '#1007', name: 'Liza Coronel', email: 'liza.coronel@gmail.com', phone: '+63 923 890 1234', role: 'Reporter', reports: 5, joined: 'Aug 14, 2023', status: 'Active', verified: true, initial: 'LC' },
-  { id: '#1008', name: 'Bernard Tan', email: 'btan@gmail.com', phone: '+63 924 901 2345', role: 'Reporter', reports: 1, joined: 'Sep 29, 2023', status: 'Inactive', verified: false, initial: 'BT' },
-  { id: '#1009', name: 'Grace Villanueva', email: 'g.villa@gmail.com', phone: '+63 925 012 3456', role: 'Moderator', reports: 27, joined: 'Apr 18, 2023', status: 'Active', verified: true, initial: 'GV' },
-  { id: '#1010', name: 'Rico Delos Santos', email: 'rico.ds@gmail.com', phone: '+63 926 123 4567', role: 'Reporter', reports: 3, joined: 'Oct 5, 2023', status: 'Active', verified: true, initial: 'RD' },
-];
+import React, { useEffect, useState } from 'react';
+import { Search, Plus, CheckCircle2, UserCircle, Users, AlertTriangle, ShieldCheck, Edit2, Ban, Trash2, ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { adminApi } from '../../../api/adminApi';
+import { User } from '../../../types/auth';
 
 export default function AdminUsersPage() {
   const [searchTerm, setSearchTerm] = useState('');
+  const [usersList, setUsersList] = useState<User[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingUserId, setEditingUserId] = useState<number | null>(null);
+  const [editForm, setEditForm] = useState({ name: '', email: '', role: 'USER' });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  const fetchUsers = async () => {
+    try {
+      const data = await adminApi.getUsers();
+      setUsersList(data);
+    } catch (error) {
+      console.error("Failed to fetch users", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  const openEditModal = (user: User) => {
+    setEditingUserId(user.id);
+    setEditForm({
+      name: user.name || (user.firstName ? `${user.firstName} ${user.lastName || ''}`.trim() : ''),
+      email: user.email,
+      role: user.role.replace('ROLE_', '')
+    });
+    setIsModalOpen(true);
+  };
+
+  const handleUpdateUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingUserId) return;
+    setIsSubmitting(true);
+    try {
+      await adminApi.updateUser(editingUserId, {
+        name: editForm.name,
+        email: editForm.email,
+        role: editForm.role
+      });
+      setIsModalOpen(false);
+      fetchUsers();
+      
+      // Show success popup for 3 seconds
+      setSuccessMessage("Changes saved successfully!");
+      setTimeout(() => setSuccessMessage(null), 3000);
+      
+    } catch (error: any) {
+      console.error("Failed to update user", error);
+      alert("Error updating user: " + (error?.response?.data?.message || error?.response?.data || error.message || "Unknown error"));
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleToggleSuspend = async (user: User) => {
+    try {
+      await adminApi.updateUser(user.id, { active: !user.active });
+      fetchUsers();
+    } catch (error) {
+      console.error("Failed to toggle suspend status", error);
+    }
+  };
+
+  const handleDeleteUser = async (id: number) => {
+    if (window.confirm("Are you sure you want to completely remove this user?")) {
+      try {
+        await adminApi.deleteUser(id);
+        fetchUsers();
+      } catch (error) {
+        console.error("Failed to delete user", error);
+      }
+    }
+  };
+
+  const filteredUsers = usersList.filter(u => 
+    (u.email || '').toLowerCase().includes(searchTerm.toLowerCase()) || 
+    (u.firstName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (u.lastName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (u.name || '').toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <div className="p-6 md:p-8 max-w-[1400px] mx-auto space-y-6 pb-20" style={{ fontFamily: "'Inter', sans-serif" }}>
       
+      {/* Success Toast */}
+      {successMessage && (
+        <div className="fixed top-6 right-6 z-50 bg-green-50 text-green-700 border border-green-200 px-4 py-3 rounded-xl shadow-lg flex items-center gap-3 transition-all animate-fade-in">
+          <CheckCircle2 size={20} className="text-green-500" />
+          <span className="font-semibold text-sm">{successMessage}</span>
+          <button onClick={() => setSuccessMessage(null)} className="ml-2 text-green-600 hover:text-green-800">
+            <X size={16} />
+          </button>
+        </div>
+      )}
+
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-slate-900">Users</h1>
@@ -33,7 +118,7 @@ export default function AdminUsersPage() {
             <Users size={20} />
           </div>
           <div>
-            <h2 className="text-2xl font-bold text-slate-900 leading-tight">3,541</h2>
+            <h2 className="text-2xl font-bold text-slate-900 leading-tight">{usersList.length}</h2>
             <p className="text-sm font-medium text-slate-500">Total Users</p>
           </div>
         </div>
@@ -43,7 +128,9 @@ export default function AdminUsersPage() {
             <UserCircle size={20} />
           </div>
           <div>
-            <h2 className="text-2xl font-bold text-slate-900 leading-tight">3,102</h2>
+            <h2 className="text-2xl font-bold text-slate-900 leading-tight">
+              {usersList.filter(u => u.active !== false).length}
+            </h2>
             <p className="text-sm font-medium text-slate-500">Active</p>
           </div>
         </div>
@@ -53,7 +140,9 @@ export default function AdminUsersPage() {
             <AlertTriangle size={20} />
           </div>
           <div>
-            <h2 className="text-2xl font-bold text-slate-900 leading-tight">87</h2>
+            <h2 className="text-2xl font-bold text-slate-900 leading-tight">
+              {usersList.filter(u => u.active === false).length}
+            </h2>
             <p className="text-sm font-medium text-slate-500">Suspended</p>
           </div>
         </div>
@@ -63,8 +152,10 @@ export default function AdminUsersPage() {
             <ShieldCheck size={20} />
           </div>
           <div>
-            <h2 className="text-2xl font-bold text-slate-900 leading-tight">14</h2>
-            <p className="text-sm font-medium text-slate-500">Moderators</p>
+            <h2 className="text-2xl font-bold text-slate-900 leading-tight">
+              {usersList.filter(u => u.role === 'ROLE_ADMIN' || u.role === 'ADMIN').length}
+            </h2>
+            <p className="text-sm font-medium text-slate-500">Admins</p>
           </div>
         </div>
       </div>
@@ -109,64 +200,58 @@ export default function AdminUsersPage() {
                 <th className="p-4 pl-6">User</th>
                 <th className="p-4">Contact</th>
                 <th className="p-4">Role</th>
-                <th className="p-4">Reports</th>
-                <th className="p-4">Joined</th>
                 <th className="p-4">Status</th>
                 <th className="p-4 text-center pr-6">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {mockUsers.map((user) => (
+              {isLoading ? (
+                <tr><td colSpan={5} className="p-8 text-center text-slate-500">Loading users...</td></tr>
+              ) : filteredUsers.length === 0 ? (
+                <tr><td colSpan={5} className="p-8 text-center text-slate-500">No users found</td></tr>
+              ) : filteredUsers.map((user) => (
                 <tr key={user.id} className="hover:bg-slate-50 transition-colors">
                   <td className="p-4 pl-6">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-sm shrink-0">
-                        {user.initial}
+                      <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-sm shrink-0 uppercase">
+                        {user.name?.[0] || user.firstName?.[0] || user.email?.[0] || '?'}{user.lastName?.[0] || ''}
                       </div>
                       <div>
                         <div className="font-bold text-slate-900 text-sm flex items-center gap-1.5">
-                          {user.name}
-                          {user.verified && <CheckCircle2 size={14} className="text-green-500" />}
+                          {user.name || (user.firstName ? `${user.firstName} ${user.lastName || ''}` : 'Unknown')}
+                          {user.active !== false && <CheckCircle2 size={14} className="text-green-500" />}
                         </div>
-                        <div className="text-xs font-medium text-slate-400 mt-0.5">ID {user.id}</div>
+                        <div className="text-xs font-medium text-slate-400 mt-0.5">ID #{user.id}</div>
                       </div>
                     </div>
                   </td>
                   <td className="p-4">
                     <div className="text-sm font-medium text-slate-700">{user.email}</div>
-                    <div className="text-xs text-slate-500 mt-0.5">{user.phone}</div>
                   </td>
                   <td className="p-4">
                     <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold border ${
-                      user.role === 'Admin' ? 'bg-purple-50 text-purple-700 border-purple-200' :
-                      user.role === 'Moderator' ? 'bg-blue-50 text-blue-700 border-blue-200' :
+                      user.role === 'ROLE_ADMIN' || user.role === 'ADMIN' ? 'bg-purple-50 text-purple-700 border-purple-200' :
                       'bg-slate-100 text-slate-600 border-slate-200'
                     }`}>
                       {user.role}
                     </span>
                   </td>
                   <td className="p-4">
-                    <div className="text-sm font-bold text-slate-900">{user.reports} <span className="font-medium text-slate-500 text-xs font-normal">submitted</span></div>
-                  </td>
-                  <td className="p-4 text-sm text-slate-600 whitespace-nowrap">{user.joined}</td>
-                  <td className="p-4">
                     <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold border ${
-                      user.status === 'Active' ? 'bg-green-50 text-green-700 border-green-200' :
-                      user.status === 'Suspended' ? 'bg-red-50 text-red-700 border-red-200' :
-                      'bg-slate-100 text-slate-600 border-slate-200'
+                      user.active !== false ? 'bg-green-50 text-green-700 border-green-200' : 'bg-red-50 text-red-700 border-red-200'
                     }`}>
-                      {user.status}
+                      {user.active !== false ? 'Active' : 'Suspended'}
                     </span>
                   </td>
                   <td className="p-4 pr-6">
                     <div className="flex items-center justify-center gap-1.5">
-                      <button className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Edit User">
+                      <button onClick={() => openEditModal(user)} className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Edit User">
                         <Edit2 size={16} />
                       </button>
-                      <button className="p-1.5 text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors" title="Suspend User">
-                        <Ban size={16} />
+                      <button onClick={() => handleToggleSuspend(user)} className="p-1.5 text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors" title={user.active !== false ? "Suspend User" : "Activate User"}>
+                        <Ban size={16} className={user.active === false ? "text-amber-600" : ""} />
                       </button>
-                      <button className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Delete User">
+                      <button onClick={() => handleDeleteUser(user.id)} className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Delete User">
                         <Trash2 size={16} />
                       </button>
                     </div>
@@ -179,18 +264,75 @@ export default function AdminUsersPage() {
 
         {/* Pagination */}
         <div className="p-4 border-t border-slate-100 flex items-center justify-between text-sm text-slate-500">
-          <div>Showing 10 of 10 users</div>
-          <div className="flex items-center gap-1">
-            <button className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 text-slate-400"><ChevronLeft size={16} /></button>
-            <button className="w-8 h-8 flex items-center justify-center rounded-lg bg-blue-600 text-white font-bold">1</button>
-            <button className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 font-medium text-slate-700">2</button>
-            <button className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 font-medium text-slate-700">3</button>
-            <span className="px-1">...</span>
-            <button className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 font-medium text-slate-700">15</button>
-            <button className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 text-slate-600"><ChevronRight size={16} /></button>
-          </div>
+          <div>Showing {filteredUsers.length} users</div>
         </div>
       </div>
+
+      {/* Edit User Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden flex flex-col">
+            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+              <h2 className="text-xl font-bold text-slate-900">Edit User</h2>
+              <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600">
+                <X size={20} />
+              </button>
+            </div>
+            <div className="p-6">
+              <form id="editUserForm" onSubmit={handleUpdateUser} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1">Name</label>
+                  <input 
+                    type="text" 
+                    required
+                    className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                    value={editForm.name}
+                    onChange={e => setEditForm({...editForm, name: e.target.value})}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1">Email</label>
+                  <input 
+                    type="email" 
+                    required
+                    className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                    value={editForm.email}
+                    onChange={e => setEditForm({...editForm, email: e.target.value})}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1">Role</label>
+                  <select 
+                    className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                    value={editForm.role}
+                    onChange={e => setEditForm({...editForm, role: e.target.value})}
+                  >
+                    <option value="USER">USER</option>
+                    <option value="ADMIN">ADMIN</option>
+                  </select>
+                </div>
+              </form>
+            </div>
+            <div className="px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-3">
+              <button 
+                type="button" 
+                onClick={() => setIsModalOpen(false)}
+                className="px-5 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-200 rounded-xl transition-colors"
+              >
+                Cancel
+              </button>
+              <button 
+                type="submit" 
+                form="editUserForm"
+                disabled={isSubmitting}
+                className="px-5 py-2 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-colors disabled:opacity-50"
+              >
+                {isSubmitting ? 'Saving...' : 'Save Changes'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
