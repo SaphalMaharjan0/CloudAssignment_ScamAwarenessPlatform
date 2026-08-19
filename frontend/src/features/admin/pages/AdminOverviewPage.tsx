@@ -182,22 +182,22 @@ export default function AdminOverviewPage() {
                   <div className="flex items-center gap-3 mb-2">
                     <span className="text-[10px] font-bold text-slate-400 tracking-wider uppercase">{report.id}</span>
                     <span className="px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-600 text-xs font-semibold border border-blue-100 flex items-center gap-1">
-                      <ShieldAlert size={12} /> {report.category?.name || report.category}
+                      <ShieldAlert size={12} /> {typeof report.category === 'object' ? report.category?.name : (report.category as unknown as string)}
                     </span>
                   </div>
                   <h4 className="font-bold text-slate-900">{report.title}</h4>
                   <p className="text-xs text-slate-500 mt-1">
-                    By {report.reporter?.firstName} {report.reporter?.lastName} · {new Date(report.createdAt).toLocaleDateString()}
+                    By {report.reporter?.name || 'User'} · {new Date(report.createdAt || Date.now()).toLocaleDateString()}
                   </p>
                 </div>
                 <div className="flex items-center gap-3">
                   <button 
-                    onClick={() => handleApprove(report.id)}
+                    onClick={() => report.id && handleApprove(report.id)}
                     className="flex-1 md:flex-none px-4 py-2 rounded-lg text-sm font-semibold text-green-700 bg-green-50 border border-green-200 hover:bg-green-100 transition-colors flex items-center justify-center gap-2">
                     <CheckCircle2 size={16} /> Approve
                   </button>
                   <button 
-                    onClick={() => handleReject(report.id)}
+                    onClick={() => report.id && handleReject(report.id)}
                     className="flex-1 md:flex-none px-4 py-2 rounded-lg text-sm font-semibold text-red-700 bg-red-50 border border-red-200 hover:bg-red-100 transition-colors flex items-center justify-center gap-2">
                     <Trash2 size={16} /> Reject
                   </button>

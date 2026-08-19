@@ -26,6 +26,9 @@ public class User implements UserDetails {
     
     private Boolean active = true;
     
+    public Boolean getActive() { return this.active; }
+    public void setActive(Boolean active) { this.active = active; }
+    
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));

@@ -16,8 +16,9 @@ export default function AdminReportsPage() {
       // Sort to show pending first, then by date desc
       data.sort((a, b) => {
         if (a.status === 'Pending' && b.status !== 'Pending') return -1;
-        if (a.status !== 'Pending' && b.status === 'Pending') return 1;
-        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        return timeB - timeA;
       });
       setReports(data);
     } catch (error) {
@@ -51,7 +52,7 @@ export default function AdminReportsPage() {
 
   const filteredReports = reports.filter(r => 
     r.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    r.id.toLowerCase().includes(searchTerm.toLowerCase())
+    (r.id || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -130,18 +131,18 @@ export default function AdminReportsPage() {
                   </td>
                   <td className="p-4">
                     <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-100 whitespace-nowrap">
-                      <ShieldAlert size={12} /> {report.category?.name || report.category}
+                      <ShieldAlert size={12} /> {typeof report.category === 'object' ? report.category?.name : (report.category as unknown as string)}
                     </span>
                   </td>
                   <td className="p-4">
                     <div className="flex items-center gap-2">
                       <div className="w-6 h-6 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center text-[10px] font-bold uppercase">
-                        {report.reporter?.firstName?.[0] || '?'}
+                        {report.reporter?.name?.[0] || '?'}
                       </div>
-                      <span className="text-sm text-slate-700 font-medium whitespace-nowrap">{report.reporter?.firstName} {report.reporter?.lastName}</span>
+                      <span className="text-sm text-slate-700 font-medium whitespace-nowrap">{report.reporter?.name || 'User'}</span>
                     </div>
                   </td>
-                  <td className="p-4 text-sm text-slate-500 whitespace-nowrap">{new Date(report.createdAt).toLocaleDateString()}</td>
+                  <td className="p-4 text-sm text-slate-500 whitespace-nowrap">{new Date(report.createdAt || Date.now()).toLocaleDateString()}</td>
                   <td className="p-4">
                     <span className={`inline-block px-2.5 py-1 rounded-full text-[11px] font-bold border ${
                       report.priority === 'High' ? 'bg-red-50 text-red-700 border-red-200' :
@@ -165,15 +166,15 @@ export default function AdminReportsPage() {
                   </td>
                   <td className="p-4">
                     <div className="flex items-center justify-center gap-2">
-                      <Link to={`/admin/verify/${report.id.replace('RPT-', '')}`} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="View Details">
+                      <Link to={`/admin/verify/${(report.id || '').replace('RPT-', '')}`} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="View Details">
                         <Eye size={16} />
                       </Link>
                       {report.status === 'Pending' && (
                         <>
-                          <button onClick={() => handleApprove(report.id)} className="p-1.5 text-green-600 hover:bg-green-50 rounded-lg transition-colors" title="Approve">
+                          <button onClick={() => report.id && handleApprove(report.id)} className="p-1.5 text-green-600 hover:bg-green-50 rounded-lg transition-colors" title="Approve">
                             <CheckCircle2 size={16} />
                           </button>
-                          <button onClick={() => handleReject(report.id)} className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Reject">
+                          <button onClick={() => report.id && handleReject(report.id)} className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Reject">
                             <XCircle size={16} />
                           </button>
                         </>

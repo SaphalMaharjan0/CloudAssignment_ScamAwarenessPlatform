@@ -220,7 +220,7 @@ export default function AdminArticlesPage() {
               <h3 className="font-bold text-slate-900 text-base mb-1">{article.title}</h3>
               <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500">
                 <span>{article.createdAt ? new Date(article.createdAt).toLocaleDateString() : 'Unknown'}</span>
-                <span>By {article.author?.firstName || 'Admin'} {article.author?.lastName || ''}</span>
+                <span>By {article.author?.name || 'Admin'}</span>
                 <span className="flex items-center gap-1"><Eye size={12} /> {article.viewsCount || (article as any).views || 0} views</span>
                 <span>{article.readTimeMinutes || (article as any).readTime || 5} min read</span>
               </div>

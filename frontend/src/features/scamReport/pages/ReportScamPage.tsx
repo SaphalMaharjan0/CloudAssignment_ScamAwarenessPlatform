@@ -31,7 +31,7 @@ export default function ReportScamPage() {
           const report = reports.find(r => r.id === id);
           if (report) {
             setTitle(report.title || '');
-            setCategory(report.category?.name || report.category || '');
+            setCategory(typeof report.category === 'object' ? report.category?.name || '' : (report.category as unknown as string) || '');
             setDescription(report.description || '');
             setPlatformUsed(report.platformUsed || '');
             setScammerDetails(report.scammerDetails || '');
@@ -70,7 +70,7 @@ export default function ReportScamPage() {
         scammerDetails,
         financialLoss: parseFloat(financialLoss) || 0,
         documentUrls: documents,
-        ...(user && user.id ? { reporter: { id: user.id, name: `${user.firstName} ${user.lastName}`, email: user.email } } : {})
+        ...(user && user.id ? { reporter: { id: user.id, name: user.name || 'User', email: user.email } } : {})
       };
       
       if (id) {
@@ -81,7 +81,7 @@ export default function ReportScamPage() {
       
       // Redirect to my-reports after success
       navigate('/app/my-reports');
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
       const errorMessage = err.response?.data?.message || err.response?.data || err.message || 'Unknown error occurred';
       setError(`Failed to submit report: ${errorMessage}`);

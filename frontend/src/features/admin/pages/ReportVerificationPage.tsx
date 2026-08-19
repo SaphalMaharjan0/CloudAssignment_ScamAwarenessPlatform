@@ -30,7 +30,7 @@ export default function ReportVerificationPage() {
   }, [id]);
 
   const handleApprove = async () => {
-    if (report) {
+    if (report && report.id) {
       try {
         await adminApi.updateReportStatus(report.id, 'Verified');
         fetchReport();
@@ -41,7 +41,7 @@ export default function ReportVerificationPage() {
   };
 
   const handleReject = async () => {
-    if (report) {
+    if (report && report.id) {
       try {
         await adminApi.updateReportStatus(report.id, 'Rejected');
         fetchReport();
@@ -68,7 +68,7 @@ export default function ReportVerificationPage() {
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold text-slate-900">Report Verification</h1>
-            <p className="text-slate-500 mt-1 text-sm">{report.id} · Submitted {new Date(report.createdAt).toLocaleDateString()}</p>
+            <p className="text-slate-500 mt-1 text-sm">{report.id} · Submitted {new Date(report.createdAt || Date.now()).toLocaleDateString()}</p>
           </div>
         </div>
       </div>
@@ -92,7 +92,7 @@ export default function ReportVerificationPage() {
                 {report.status}
               </span>
               <span className="px-2.5 py-1 bg-blue-50 text-blue-700 border border-blue-200 rounded-full text-xs font-bold">
-                {report.category?.name || report.category}
+                {typeof report.category === 'object' ? report.category?.name : (report.category as unknown as string)}
               </span>
             </div>
             
@@ -105,7 +105,7 @@ export default function ReportVerificationPage() {
             <div className="grid grid-cols-2 gap-6 pt-6 border-t border-slate-100">
               <div>
                 <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Date Reported</h4>
-                <p className="font-semibold text-slate-900 text-sm">{new Date(report.createdAt).toLocaleDateString()}</p>
+                <p className="font-semibold text-slate-900 text-sm">{new Date(report.createdAt || Date.now()).toLocaleDateString()}</p>
               </div>
               <div>
                 <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Location</h4>
@@ -129,10 +129,10 @@ export default function ReportVerificationPage() {
           {/* Reporter Information */}
           <div className="bg-white p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-6">
             <div className="w-16 h-16 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100 shrink-0 uppercase text-xl font-bold">
-              {report.reporter?.firstName?.[0]}{report.reporter?.lastName?.[0]}
+              {report.reporter?.name?.[0] || '?'}
             </div>
             <div>
-              <h3 className="font-bold text-slate-900 text-lg">{report.reporter?.firstName} {report.reporter?.lastName}</h3>
+              <h3 className="font-bold text-slate-900 text-lg">{report.reporter?.name || 'User'}</h3>
               <p className="text-sm text-slate-500 mt-1">{report.reporter?.email}</p>
             </div>
           </div>

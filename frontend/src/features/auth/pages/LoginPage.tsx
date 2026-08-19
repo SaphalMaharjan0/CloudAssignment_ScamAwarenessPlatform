@@ -18,7 +18,11 @@ export default function LoginPage() {
     try {
       const loggedInUser = await login({ email, password });
       const userRole = (loggedInUser.role || '').toUpperCase();
-      if (userRole === 'ADMIN' || userRole === 'ROLE_ADMIN') {
+      const authorities = (loggedInUser as any).authorities || [];
+      const isAdmin = userRole === 'ADMIN' || userRole === 'ROLE_ADMIN' || 
+                      authorities.some((a: any) => a.authority === 'ROLE_ADMIN' || a.authority === 'ADMIN');
+      
+      if (isAdmin) {
         navigate('/admin/overview');
       } else {
         navigate('/app/dashboard');
