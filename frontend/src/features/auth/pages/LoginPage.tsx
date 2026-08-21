@@ -1,16 +1,39 @@
 import { useState } from "react";
 import { Shield, Mail, Lock, Globe, ChevronLeft } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../../../context/AuthContext";
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    navigate('/app/dashboard');
+    setError("");
+    setIsLoading(true);
+    try {
+      const loggedInUser = await login({ email, password });
+      const userRole = (loggedInUser.role || '').toUpperCase();
+      const authorities = (loggedInUser as any).authorities || [];
+      const isAdmin = userRole === 'ADMIN' || userRole === 'ROLE_ADMIN' || 
+                      authorities.some((a: any) => a.authority === 'ROLE_ADMIN' || a.authority === 'ADMIN');
+      
+      if (isAdmin) {
+        navigate('/admin/overview');
+      } else {
+        navigate('/app/dashboard');
+      }
+    } catch (err: any) {
+      setError(err.response?.data?.message || "Invalid credentials");
+    } finally {
+      setIsLoading(false);
+    }
   };
+
   return (
     <div className="h-screen overflow-hidden flex" style={{ fontFamily: "'Inter', sans-serif" }}>
       <div className="hidden lg:block lg:w-1/2 relative slide-in-left">
@@ -18,7 +41,7 @@ export default function LoginPage() {
           <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center shadow-lg">
             <Shield size={16} className="text-white" />
           </div>
-          <span className="font-bold text-white text-lg drop-shadow-md">ScamShield</span>
+          <span className="font-bold text-white text-lg drop-shadow-md">FraudGuard</span>
         </Link>
         <img
           src="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=900&h=1080&fit=crop&auto=format"
@@ -30,7 +53,7 @@ export default function LoginPage() {
           <div className="w-16 h-16 bg-white/20 backdrop-blur rounded-2xl flex items-center justify-center mb-6">
             <Shield size={28} className="text-white" />
           </div>
-          <h2 className="text-3xl font-extrabold text-white mb-4">Welcome Back to ScamShield</h2>
+          <h2 className="text-3xl font-extrabold text-white mb-4">Welcome Back to FraudGuard</h2>
           <p className="text-blue-200 leading-relaxed max-w-sm">
             Your trusted partner in fighting online scams and protecting the Filipino community from cybercrime.
           </p>
@@ -53,11 +76,17 @@ export default function LoginPage() {
             <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
               <Shield size={16} className="text-white" />
             </div>
-            <span className="font-bold text-slate-900">ScamShield</span>
+            <span className="font-bold text-slate-900">FraudGuard</span>
           </div>
           <h1 className="text-2xl font-extrabold text-slate-900 mb-1">Sign In</h1>
           <p className="text-slate-500 text-sm mb-8">Enter your credentials to access your account</p>
+          
           <div className="bg-white rounded-2xl border border-border p-8 shadow-sm">
+            {error && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm text-center">
+                {error}
+              </div>
+            )}
             <form className="space-y-6" onSubmit={handleSubmit}>
               <div>
                 <label className="block text-sm font-semibold text-slate-700 mb-1.5">Email Address</label>
@@ -65,27 +94,29 @@ export default function LoginPage() {
                   <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                   <input value={email} onChange={e => setEmail(e.target.value)}
                     className="w-full pl-9 pr-4 py-2.5 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
-                    placeholder="maria@example.com" type="email"
+                    placeholder="maria@example.com" type="email" required
                   />
                 </div>
               </div>
               <div>
                 <div className="flex justify-between mb-1.5">
                   <label className="text-sm font-semibold text-slate-700">Password</label>
-                  <button className="text-xs text-blue-600 hover:text-blue-700 font-medium">Forgot password?</button>
+                  <button type="button" className="text-xs text-blue-600 hover:text-blue-700 font-medium">Forgot password?</button>
                 </div>
                 <div className="relative">
                   <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                   <input value={password} onChange={e => setPassword(e.target.value)}
                     className="w-full pl-9 pr-4 py-2.5 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
-                    placeholder="••••••••" type="password"
+                    placeholder="••••••••" type="password" required
                   />
                 </div>
               </div>
               <button
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl text-sm transition-colors shadow-sm"
+                type="submit"
+                disabled={isLoading}
+                className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-semibold py-3 rounded-xl text-sm transition-colors shadow-sm flex justify-center items-center gap-2"
               >
-                Sign In
+                {isLoading ? "Signing in..." : "Sign In"}
               </button>
             </form>
             <div className="mt-5 relative flex items-center">

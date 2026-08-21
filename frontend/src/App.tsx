@@ -18,7 +18,7 @@ function Navigation() {
             <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
               <Shield size={16} className="text-white" />
             </div>
-            <span className="font-bold text-slate-900">ScamShield</span>
+            <span className="font-bold text-slate-900">FraudGuard</span>
           </Link>
         </div>
         <div className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-600">

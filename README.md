@@ -1,4 +1,4 @@
-# ScamShield 🛡️
+# FraudGuard 🛡️
 
 A comprehensive **Scam Awareness and Reporting Platform** built to combat cybercrime, educate the public, and provide a streamlined channel for users to report fraudulent activities.
 

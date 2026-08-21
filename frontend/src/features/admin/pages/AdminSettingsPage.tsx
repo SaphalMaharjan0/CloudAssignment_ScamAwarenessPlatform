@@ -41,14 +41,14 @@ export default function AdminSettingsPage() {
               <div>
                 <h3 className="text-sm font-semibold text-slate-900">Platform Name</h3>
               </div>
-              <input type="text" defaultValue="ScamShield Philippines" className="w-full sm:w-64 px-4 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-right" />
+              <input type="text" defaultValue="FraudGuardilippines" className="w-full sm:w-64 px-4 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-right" />
             </div>
 
             <div className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <h3 className="text-sm font-semibold text-slate-900">Support Email</h3>
               </div>
-              <input type="email" defaultValue="support@scamshield.gov.ph" className="w-full sm:w-64 px-4 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-right" />
+              <input type="email" defaultValue="support@FraudGuard.gov.ph" className="w-full sm:w-64 px-4 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-right" />
             </div>
 
             <div className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -186,7 +186,7 @@ export default function AdminSettingsPage() {
               <div>
                 <h3 className="text-sm font-semibold text-slate-900">Sender email address</h3>
               </div>
-              <input type="email" defaultValue="noreply@scamshield.gov.ph" className="w-full sm:w-64 px-4 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-right" />
+              <input type="email" defaultValue="noreply@FraudGuard.gov.ph" className="w-full sm:w-64 px-4 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-right" />
             </div>
 
           </div>

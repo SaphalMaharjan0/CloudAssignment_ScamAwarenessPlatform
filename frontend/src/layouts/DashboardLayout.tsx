@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
   LayoutDashboard, 
@@ -14,11 +14,29 @@ import {
   Menu,
   X
 } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import { notificationApi } from '../api/notificationApi';
 
 export default function DashboardLayout() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { user, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      if (!user) return;
+      try {
+        const data = await notificationApi.getNotifications();
+        const myNotifs = data.filter(n => n.user?.email === user.email || !n.user);
+        setUnreadCount(myNotifs.filter(n => !n.isRead).length);
+      } catch (error) {
+        console.error("Failed to fetch notification count", error);
+      }
+    };
+    fetchNotifications();
+  }, [user]);
 
   const navItems = [
     { name: 'Dashboard', path: '/app/dashboard', icon: LayoutDashboard },
@@ -26,13 +44,21 @@ export default function DashboardLayout() {
     { name: 'My Reports', path: '/app/my-reports', icon: FileText },
     { name: 'Scam Database', path: '/app/database', icon: Database },
     { name: 'Awareness Articles', path: '/app/articles', icon: BookOpen },
-    { name: 'Notifications', path: '/app/notifications', icon: Bell, badge: 3 },
+    { name: 'Notifications', path: '/app/notifications', icon: Bell, badge: unreadCount > 0 ? unreadCount : undefined },
     { name: 'Profile', path: '/app/profile', icon: User },
   ];
 
   const handleLogout = () => {
+    logout();
     navigate('/login');
   };
+
+  const userInitials = user?.firstName && user?.lastName 
+    ? `${user.firstName[0]}${user.lastName[0]}`
+    : 'U';
+  const userName = user?.firstName && user?.lastName 
+    ? `${user.firstName} ${user.lastName}` 
+    : user?.email || 'User';
 
   return (
     <div className="flex h-screen bg-slate-50 overflow-hidden" style={{ fontFamily: "'Inter', sans-serif" }}>
@@ -51,7 +77,7 @@ export default function DashboardLayout() {
             <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
               <Shield size={16} className="text-white" />
             </div>
-            <span className="font-bold text-slate-900">ScamShield</span>
+            <span className="font-bold text-slate-900">FraudGuard</span>
           </Link>
           <button className="ml-auto lg:hidden" onClick={() => setMobileMenuOpen(false)}>
             <X size={20} className="text-slate-500" />
@@ -77,7 +103,7 @@ export default function DashboardLayout() {
               >
                 <Icon size={18} className={isActive ? 'text-blue-100' : 'text-slate-400'} />
                 {item.name}
-                {item.badge && (
+                {item.badge !== undefined && (
                   <span className="ml-auto bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
                     {item.badge}
                   </span>
@@ -122,13 +148,15 @@ export default function DashboardLayout() {
           <div className="flex items-center gap-4">
             <button onClick={() => navigate('/app/notifications')} className="p-2 text-slate-500 hover:bg-slate-50 rounded-full transition-colors relative">
               <Bell size={20} />
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
+              {unreadCount > 0 && (
+                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
+              )}
             </button>
             <div onClick={() => navigate('/app/profile')} className="flex items-center gap-3 cursor-pointer p-1 pr-3 rounded-full hover:bg-slate-50 transition-colors">
-              <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold shadow-sm">
-                MS
+              <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold shadow-sm uppercase">
+                {userInitials}
               </div>
-              <span className="text-sm font-semibold text-slate-700 hidden sm:block">Maria Santos</span>
+              <span className="text-sm font-semibold text-slate-700 hidden sm:block">{userName}</span>
             </div>
           </div>
         </header>

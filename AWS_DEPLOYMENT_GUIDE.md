@@ -1,6 +1,6 @@
-# AWS Deployment Guide: ScamShield
+# AWS Deployment Guide: FraudGuard
 
-This guide covers the step-by-step deployment of the ScamShield Spring Boot + React bundled application to AWS, specifically designed to fit within the AWS Free Tier for your university assignment.
+This guide covers the step-by-step deployment of the FraudGuard Spring Boot + React bundled application to AWS, specifically designed to fit within the AWS Free Tier for your university assignment.
 
 ---
 
@@ -34,7 +34,7 @@ Before deploying, you must package the application into a single `.jar` file.
 4. Engine options: Select **PostgreSQL**.
 5. Templates: Select **Free tier**.
 6. Settings:
-   - DB instance identifier: `scamshield-db`
+   - DB instance identifier: `FraudGuard-db`
    - Master username: `postgres`
    - Master password: `<Choose a secure password>`
 7. Instance configuration: `db.t3.micro` or `db.t2.micro`.
@@ -44,7 +44,7 @@ Before deploying, you must package the application into a single `.jar` file.
    - Public access: **No** (Security best practice: only EB should access it).
    - VPC security group: Create new (name it `rds-sg`).
 10. Database options (under Additional configuration):
-    - Initial database name: `scamshield` (Important: Do not skip this, Spring Boot expects this DB to exist).
+    - Initial database name: `FraudGuard` (Important: Do not skip this, Spring Boot expects this DB to exist).
 11. Click **Create database**.
 
 > 📸 **Screenshot Opportunity (Report):** Take a screenshot of the "Databases" list showing your newly created RDS instance in the "Available" state.
@@ -55,7 +55,7 @@ Before deploying, you must package the application into a single `.jar` file.
 
 1. Navigate to **Elastic Beanstalk** in the AWS Console.
 2. Click **Create application**.
-3. Application Name: `ScamShieldApp`
+3. Application Name: `FraudGuardApp`
 4. Platform: 
    - Platform type: **Managed platform**
    - Platform: **Java**
@@ -70,7 +70,7 @@ Before deploying, you must package the application into a single `.jar` file.
    - `SPRING_PROFILES_ACTIVE` = `prod`
    - `RDS_HOSTNAME` = `<Your RDS Endpoint copied from the RDS console>`
    - `RDS_PORT` = `5432`
-   - `RDS_DB_NAME` = `scamshield`
+   - `RDS_DB_NAME` = `FraudGuard`
    - `RDS_USERNAME` = `postgres`
    - `RDS_PASSWORD` = `<Your RDS Master Password>`
    - `JWT_SECRET` = `<Your base64 JWT Secret>`
@@ -101,7 +101,7 @@ Once the Elastic Beanstalk environment turns green (Health: OK), your app is liv
 
 ### Endpoints to demonstrate in your 20-minute video:
 
-1. **Frontend App**: Visit the EB provided URL (e.g., `http://scamshield-env.eba-xxxx.region.elasticbeanstalk.com/`). Since we bundled the React app, the UI will load directly from the root URL.
+1. **Frontend App**: Visit the EB provided URL (e.g., `http://FraudGuard-env.eba-xxxx.region.elasticbeanstalk.com/`). Since we bundled the React app, the UI will load directly from the root URL.
 2. **Health Check**: Visit `http://<EB-URL>/actuator/health`. This proves the Spring Boot Actuator is running and AWS can monitor instance health.
 3. **Database Test (CRUD)**:
    - Use Postman or the frontend UI (once connected) to make a `POST` request to `/api/categories` to create a Scam Category.

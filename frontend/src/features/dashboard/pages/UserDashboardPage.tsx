@@ -1,5 +1,8 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { ShieldAlert, FileText, CheckCircle2, Clock, Users, ChevronRight, Eye } from 'lucide-react';
+import { useAuth } from '../../../context/AuthContext';
+import { scamReportApi } from '../../../api/scamReportApi';
+import { ScamReport } from '../../../types/scamReport.types';
 import { 
   BarChart, 
   Bar, 
@@ -45,13 +48,40 @@ const recentReports = [
 ];
 
 export default function UserDashboardPage() {
+  const { user } = useAuth();
+  const [reports, setReports] = useState<ScamReport[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        const allReports = await scamReportApi.getReports();
+        setReports(allReports);
+      } catch (error) {
+        console.error("Failed to load dashboard data", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchDashboardData();
+  }, []);
+
+  const totalReports = reports.length;
+  const verifiedReports = reports.filter(r => r.status === 'Verified').length;
+  const pendingReports = reports.filter(r => r.status === 'Pending').length;
+  const recentLiveReports = reports.slice(0, 4);
+
+  if (isLoading) {
+    return <div className="p-8 text-center text-slate-500">Loading dashboard data...</div>;
+  }
+
   return (
     <div className="p-6 md:p-8 max-w-7xl mx-auto space-y-8" style={{ fontFamily: "'Inter', sans-serif" }}>
       
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-slate-900">Dashboard</h1>
-        <p className="text-slate-500 mt-1">Good morning, Maria. Here's what's happening.</p>
+        <p className="text-slate-500 mt-1">Good morning, {user?.firstName || 'User'}. Here's what's happening.</p>
       </div>
 
       {/* Alert Banner */}
@@ -74,7 +104,7 @@ export default function UserDashboardPage() {
           <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center mb-4">
             <FileText size={20} />
           </div>
-          <h3 className="text-3xl font-bold text-slate-900 mb-1">12</h3>
+          <h3 className="text-3xl font-bold text-slate-900 mb-1">{totalReports}</h3>
           <p className="text-sm font-medium text-slate-500">Total Reports</p>
           <p className="text-xs text-slate-400 mt-2">+2 this month</p>
         </div>
@@ -83,7 +113,7 @@ export default function UserDashboardPage() {
           <div className="w-10 h-10 rounded-xl bg-green-50 text-green-600 flex items-center justify-center mb-4">
             <CheckCircle2 size={20} />
           </div>
-          <h3 className="text-3xl font-bold text-slate-900 mb-1">8</h3>
+          <h3 className="text-3xl font-bold text-slate-900 mb-1">{verifiedReports}</h3>
           <p className="text-sm font-medium text-slate-500">Verified Reports</p>
           <p className="text-xs text-slate-400 mt-2">67% verified</p>
         </div>
@@ -92,7 +122,7 @@ export default function UserDashboardPage() {
           <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center mb-4">
             <Clock size={20} />
           </div>
-          <h3 className="text-3xl font-bold text-slate-900 mb-1">3</h3>
+          <h3 className="text-3xl font-bold text-slate-900 mb-1">{pendingReports}</h3>
           <p className="text-sm font-medium text-slate-500">Pending Review</p>
           <p className="text-xs text-slate-400 mt-2">~48hr review time</p>
         </div>
@@ -193,7 +223,7 @@ export default function UserDashboardPage() {
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse min-w-[600px]">
             <tbody>
-              {recentReports.map((report) => (
+              {recentLiveReports.map((report) => (
                 <tr key={report.id} className="border-b border-slate-50 last:border-0 hover:bg-slate-50 transition-colors">
                   <td className="p-4 md:px-6 py-4">
                     <div className="flex flex-col gap-1">
@@ -203,11 +233,11 @@ export default function UserDashboardPage() {
                   </td>
                   <td className="p-4 md:px-6 py-4">
                     <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-blue-50 text-blue-700 border border-blue-100">
-                      {report.category}
+                      {report.category?.name || 'Uncategorized'}
                     </span>
                   </td>
                   <td className="p-4 md:px-6 py-4 text-sm text-slate-500 whitespace-nowrap">
-                    {report.date}
+                    {report.createdAt ? new Date(report.createdAt).toLocaleDateString() : 'Unknown date'}
                   </td>
                   <td className="p-4 md:px-6 py-4 whitespace-nowrap">
                     <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold border ${
