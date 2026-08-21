@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { adminApi } from '../api/adminApi';
 import { notificationApi } from '../api/notificationApi';
+import { useAuth } from '../context/AuthContext';
 
 export default function AdminLayout() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -45,7 +46,10 @@ export default function AdminLayout() {
     return () => clearInterval(intervalId);
   }, []);
 
+  const { logout } = useAuth();
+
   const handleLogout = () => {
+    logout();
     navigate('/login');
   };
 
