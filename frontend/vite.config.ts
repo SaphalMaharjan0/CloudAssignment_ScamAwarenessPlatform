@@ -10,7 +10,7 @@ export default defineConfig({
   ],
   build: {
     // Output the React build directly into the Spring Boot static folder
-    outDir: '../backend/src/main/resources/static',
+    outDir: '../CloudBackend/src/main/resources/static',
     emptyOutDir: true
   }
 })
