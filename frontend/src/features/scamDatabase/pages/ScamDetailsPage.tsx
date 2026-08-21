@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ChevronLeft, Calendar, MapPin, ShieldAlert, AlertTriangle, CheckCircle, Share2, Eye, Flag, Info } from 'lucide-react';
+import { ChevronLeft, Calendar, MapPin, ShieldAlert, AlertTriangle, CheckCircle, Share2, Eye, Flag, Info, Image } from 'lucide-react';
 
 const mockScams = [
   { 
@@ -60,19 +60,35 @@ export default function ScamDetailsPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [scam, setScam] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   const handleBack = () => {
-    const basePath = window.location.pathname.startsWith('/app') ? '/app/database' : '/database';
+    let basePath = '/database';
+    if (window.location.pathname.startsWith('/app')) basePath = '/app/database';
+    if (window.location.pathname.startsWith('/admin')) basePath = '/admin/database';
     navigate(basePath);
   };
 
   useEffect(() => {
-    // In a real app, this would be an API call
-    const foundScam = mockScams.find(s => s.id === Number(id));
-    if (foundScam) {
-      setScam(foundScam);
-    }
+    const fetchScam = async () => {
+      try {
+        setIsLoading(true);
+        if (!id) return;
+        const { scamReportApi } = await import('../../../api/scamReportApi');
+        const data = await scamReportApi.getReportById(id);
+        setScam(data);
+      } catch (error) {
+        console.error("Failed to load scam report", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchScam();
   }, [id]);
+
+  if (isLoading) {
+    return <div className="min-h-[calc(100vh-65px)] flex items-center justify-center bg-slate-50">Loading...</div>;
+  }
 
   if (!scam) {
     return (
@@ -104,7 +120,7 @@ export default function ScamDetailsPage() {
             <div className="relative z-10">
               <div className="flex flex-wrap gap-3 mb-6">
                 <span className="px-3 py-1 bg-white/20 backdrop-blur text-white text-xs font-bold uppercase tracking-wider rounded-full border border-white/30">
-                  {scam.category}
+                  {scam.category?.name || 'Uncategorized'}
                 </span>
                 <span className={`px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-full border flex items-center gap-1 ${
                   scam.status === 'Verified' ? 'bg-green-500/20 text-green-300 border-green-500/30' : 'bg-amber-500/20 text-amber-300 border-amber-500/30'
@@ -119,15 +135,11 @@ export default function ScamDetailsPage() {
               <div className="flex flex-wrap items-center gap-6 text-sm text-slate-300">
                 <div className="flex items-center gap-2">
                   <Calendar size={16} />
-                  <span>Reported on {scam.date}</span>
+                  <span>Reported on {scam.createdAt ? new Date(scam.createdAt).toLocaleDateString() : 'Unknown'}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <MapPin size={16} />
-                  <span>{scam.location}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Eye size={16} />
-                  <span>{scam.views} Views</span>
+                  <span>{scam.platformUsed || 'Nationwide'}</span>
                 </div>
               </div>
             </div>
@@ -142,27 +154,34 @@ export default function ScamDetailsPage() {
                     <AlertTriangle className="text-amber-500" size={20} />
                     How this scam works
                   </h2>
-                  <p className="text-slate-600 leading-relaxed text-lg">
-                    {scam.fullDescription}
+                  <p className="text-slate-600 leading-relaxed text-lg whitespace-pre-wrap">
+                    {scam.description}
                   </p>
                 </section>
 
-                <section className="bg-blue-50 rounded-2xl p-6 border border-blue-100">
-                  <h2 className="text-xl font-bold text-slate-900 mb-4 flex items-center gap-2">
-                    <ShieldAlert className="text-blue-600" size={20} />
-                    How to protect yourself
-                  </h2>
-                  <ul className="space-y-3">
-                    {scam.preventions.map((prevention: string, index: number) => (
-                      <li key={index} className="flex gap-3 text-slate-700">
-                        <div className="mt-1 flex-shrink-0 w-5 h-5 rounded-full bg-blue-200 flex items-center justify-center text-blue-700 font-bold text-xs">
-                          {index + 1}
+                {scam.documentUrls && scam.documentUrls.length > 0 && (
+                  <section>
+                    <h2 className="text-xl font-bold text-slate-900 mb-4 flex items-center gap-2">
+                      <Image className="text-blue-500" size={20} />
+                      Uploaded Evidence
+                    </h2>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {scam.documentUrls.map((url: string, index: number) => (
+                        <div key={index} className="rounded-xl overflow-hidden border border-slate-200 shadow-sm bg-slate-100">
+                          <img 
+                            src={url.startsWith('data:') ? url : `data:image/jpeg;base64,${url}`}
+                            alt={`Evidence ${index + 1}`} 
+                            className="w-full h-auto object-cover max-h-64 cursor-pointer hover:opacity-90 transition-opacity" 
+                            onClick={() => {
+                              const w = window.open('');
+                              w?.document.write(`<img src="${url.startsWith('data:') ? url : `data:image/jpeg;base64,${url}`}" style="max-width:100%;"/>`);
+                            }}
+                          />
                         </div>
-                        <span className="leading-relaxed">{prevention}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </section>
+                      ))}
+                    </div>
+                  </section>
+                )}
               </div>
 
               {/* Sidebar */}
@@ -172,11 +191,11 @@ export default function ScamDetailsPage() {
                   <div className="space-y-4 text-sm">
                     <div>
                       <div className="text-slate-500 mb-1">Reported By</div>
-                      <div className="font-semibold text-slate-900">{scam.reportedBy}</div>
+                      <div className="font-semibold text-slate-900">{scam.reporter?.name || 'Anonymous User'}</div>
                     </div>
                     <div>
                       <div className="text-slate-500 mb-1">Report ID</div>
-                      <div className="font-mono text-slate-900">#SCAM-{scam.id.toString().padStart(4, '0')}</div>
+                      <div className="font-mono text-slate-900">#SCAM-{scam.id?.toString().substring(0, 8)}</div>
                     </div>
                   </div>
                 </div>

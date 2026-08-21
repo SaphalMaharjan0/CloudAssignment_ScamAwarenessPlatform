@@ -66,6 +66,44 @@ export default function UserDashboardPage() {
     fetchDashboardData();
   }, []);
 
+  const dynamicCategoryData = React.useMemo(() => {
+    if (!reports || reports.length === 0) return [];
+    const counts = reports.reduce((acc, report) => {
+      const catName = typeof report.category === 'object' ? report.category?.name : (report.category as unknown as string);
+      const name = catName || 'Other';
+      acc[name] = (acc[name] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+
+    return Object.entries(counts)
+      .map(([name, count], index) => ({
+        name,
+        value: Math.round((count / reports.length) * 100),
+        color: ['#3b82f6', '#22c55e', '#eab308', '#ef4444', '#a855f7', '#06b6d4'][index % 6]
+      }))
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 6);
+  }, [reports]);
+
+  const dynamicMonthlyData = React.useMemo(() => {
+    if (!reports) return [];
+    
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const monthlyCounts = months.map(name => ({ name, reports: 0 }));
+    
+    reports.forEach(report => {
+      if (report.createdAt) {
+        const date = new Date(report.createdAt);
+        const monthIndex = date.getMonth(); // 0-11
+        if (monthIndex >= 0 && monthIndex < 12) {
+          monthlyCounts[monthIndex].reports += 1;
+        }
+      }
+    });
+    
+    return monthlyCounts;
+  }, [reports]);
+
   const totalReports = reports.length;
   const verifiedReports = reports.filter(r => r.status === 'Verified').length;
   const pendingReports = reports.filter(r => r.status === 'Pending').length;
@@ -131,16 +169,18 @@ export default function UserDashboardPage() {
           <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center mb-4">
             <Users size={20} />
           </div>
-          <h3 className="text-3xl font-bold text-slate-900 mb-1">2,341</h3>
+          <h3 className="text-3xl font-bold text-slate-900 mb-1">
+            {((verifiedReports * 142) + (totalReports * 15)).toLocaleString()}
+          </h3>
           <p className="text-sm font-medium text-slate-500">Community Impact</p>
-          <p className="text-xs text-slate-400 mt-2">users warned</p>
+          <p className="text-xs text-slate-400 mt-2">estimated users warned</p>
         </div>
       </div>
 
       {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Monthly Reports Bar Chart */}
-        <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex flex-col">
+        <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex flex-col min-h-[400px]">
           <div className="flex justify-between items-start mb-6">
             <div>
               <h3 className="font-bold text-slate-900 text-lg">Monthly Reports</h3>
@@ -148,9 +188,9 @@ export default function UserDashboardPage() {
             </div>
             <span className="text-xs font-semibold bg-blue-50 text-blue-600 px-2.5 py-1 rounded-md">2024</span>
           </div>
-          <div className="flex-1 h-64 w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={monthlyData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+          <div className="flex-1 w-full relative min-h-[300px]">
+            <ResponsiveContainer width="100%" height="100%" className="absolute inset-0">
+              <BarChart data={dynamicMonthlyData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
                 <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b' }} dy={10} />
                 <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b' }} />
@@ -158,24 +198,24 @@ export default function UserDashboardPage() {
                   cursor={{ fill: '#f1f5f9' }}
                   contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                 />
-                <Bar dataKey="reports" fill="#3b82f6" radius={[4, 4, 0, 0]} barSize={24} />
+                <Bar dataKey="reports" fill="#3b82f6" radius={[4, 4, 0, 0]} barSize={24} isAnimationActive={false} />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
 
         {/* Scam Categories Pie Chart */}
-        <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex flex-col">
+        <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex flex-col min-h-[400px]">
           <div className="mb-2">
             <h3 className="font-bold text-slate-900 text-lg">Scam Categories</h3>
             <p className="text-sm text-slate-500">Distribution of report types</p>
           </div>
-          <div className="flex-1 flex items-center h-64">
-            <div className="w-1/2 h-full relative">
-              <ResponsiveContainer width="100%" height="100%">
+          <div className="flex-1 flex flex-col sm:flex-row items-center gap-6 min-h-[300px]">
+            <div className="w-full sm:w-1/2 h-full min-h-[250px] relative">
+              <ResponsiveContainer width="100%" height="100%" className="absolute inset-0">
                 <PieChart>
                   <Pie
-                    data={categoryData}
+                    data={dynamicCategoryData}
                     cx="50%"
                     cy="50%"
                     innerRadius={60}
@@ -183,8 +223,9 @@ export default function UserDashboardPage() {
                     paddingAngle={5}
                     dataKey="value"
                     stroke="none"
+                    isAnimationActive={false}
                   >
-                    {categoryData.map((entry, index) => (
+                    {dynamicCategoryData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
                   </Pie>
@@ -195,17 +236,21 @@ export default function UserDashboardPage() {
               </ResponsiveContainer>
             </div>
             
-            <div className="w-1/2 pl-4">
-              <div className="space-y-3">
-                {categoryData.map((category) => (
-                  <div key={category.name} className="flex items-center justify-between text-sm">
-                    <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 rounded-full" style={{ backgroundColor: category.color }} />
-                      <span className="text-slate-700">{category.name}</span>
+            <div className="w-full sm:w-1/2">
+              <div className="space-y-4">
+                {dynamicCategoryData.length === 0 ? (
+                  <div className="text-sm text-slate-500">No data available</div>
+                ) : (
+                  dynamicCategoryData.map((category) => (
+                    <div key={category.name} className="flex items-center justify-between text-sm">
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: category.color }} />
+                        <span className="text-slate-700 truncate max-w-[120px]" title={category.name}>{category.name}</span>
+                      </div>
+                      <span className="font-semibold text-slate-900">{category.value}%</span>
                     </div>
-                    <span className="font-semibold text-slate-900">{category.value}%</span>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
             </div>
           </div>

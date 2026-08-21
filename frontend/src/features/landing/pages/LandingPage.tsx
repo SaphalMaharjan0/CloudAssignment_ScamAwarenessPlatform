@@ -84,7 +84,7 @@ export default function LandingPage() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
               <Link
-                to="/report"
+                to="/app/report"
                 className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-8 py-3.5 rounded-xl font-semibold text-sm transition-all shadow-lg shadow-blue-900/40"
               >
                 <Flag size={16} /> Report a Scam

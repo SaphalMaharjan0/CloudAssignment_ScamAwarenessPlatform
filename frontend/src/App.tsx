@@ -3,9 +3,12 @@ import { BrowserRouter as Router, Link, useLocation } from 'react-router-dom';
 import { Shield, Menu, X } from 'lucide-react';
 import AppRoutes from './routes/AppRoutes';
 
+import { useAuth } from './context/AuthContext';
+
 function Navigation() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
+  const { isAuthenticated, user } = useAuth();
   const isAuthPage = location.pathname === '/login' || location.pathname === '/signup' || location.pathname.startsWith('/app') || location.pathname.startsWith('/admin');
 
   if (isAuthPage) return null;
@@ -27,8 +30,14 @@ function Navigation() {
           <a href="/#how" className="hover:text-blue-600 transition-colors">How It Works</a>
         </div>
         <div className="hidden md:flex items-center gap-3">
-          <Link to="/login" className="text-sm font-medium text-slate-700 px-4 py-2 rounded-lg hover:bg-slate-50 transition-colors">Log In</Link>
-          <Link to="/signup" className="text-sm font-medium text-white bg-blue-600 px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">Sign Up</Link>
+          {isAuthenticated ? (
+            <Link to={user?.role === 'ADMIN' ? '/admin/overview' : '/app/dashboard'} className="text-sm font-medium text-white bg-blue-600 px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">Go to Dashboard</Link>
+          ) : (
+            <>
+              <Link to="/login" className="text-sm font-medium text-slate-700 px-4 py-2 rounded-lg hover:bg-slate-50 transition-colors">Log In</Link>
+              <Link to="/signup" className="text-sm font-medium text-white bg-blue-600 px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">Sign Up</Link>
+            </>
+          )}
         </div>
         <button className="md:hidden" onClick={() => setMobileOpen(!mobileOpen)}>
           {mobileOpen ? <X size={20} /> : <Menu size={20} />}

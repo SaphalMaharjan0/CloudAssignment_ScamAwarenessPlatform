@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
+import { Navigate, Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
   LayoutDashboard, 
   Flag, 
@@ -20,9 +20,13 @@ import { notificationApi } from '../api/notificationApi';
 export default function DashboardLayout() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { user, isAuthenticated, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
 
   useEffect(() => {
     const fetchNotifications = async () => {

@@ -29,7 +29,9 @@ export default function ScamDatabasePage() {
     (scam.category?.name || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const basePath = window.location.pathname.startsWith('/app') ? '/app/database' : '/database';
+  let basePath = '/database';
+  if (window.location.pathname.startsWith('/app')) basePath = '/app/database';
+  if (window.location.pathname.startsWith('/admin')) basePath = '/admin/database';
 
   return (
     <div className="min-h-screen bg-slate-50 p-6 md:p-12">
