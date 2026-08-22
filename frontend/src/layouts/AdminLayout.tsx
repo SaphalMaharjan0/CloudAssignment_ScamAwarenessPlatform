@@ -66,6 +66,17 @@ export default function AdminLayout() {
     navigate('/login');
   };
 
+  const nameParts = user?.name ? user.name.split(' ') : [];
+  const firstName = user?.firstName || nameParts[0] || '';
+  const lastName = user?.lastName || (nameParts.length > 1 ? nameParts[nameParts.length - 1] : '');
+  
+  const userInitials = firstName && lastName 
+    ? `${firstName[0]}${lastName[0]}`.toUpperCase()
+    : firstName ? firstName[0].toUpperCase() : 'U';
+  const userName = firstName && lastName 
+    ? `${firstName} ${lastName}` 
+    : user?.name || user?.email || 'Admin';
+
   const navLinkClasses = ({ isActive }: { isActive: boolean }) =>
     `flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors ${
       isActive 
@@ -203,10 +214,10 @@ export default function AdminLayout() {
               )}
             </button>
             <div onClick={() => navigate('/admin/profile')} className="flex items-center gap-3 cursor-pointer p-1 pr-3 rounded-full hover:bg-slate-50 transition-colors">
-              <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold shadow-sm">
-                MS
+              <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold shadow-sm uppercase">
+                {userInitials}
               </div>
-              <span className="text-sm font-semibold text-slate-700 hidden sm:block">Maria Santos</span>
+              <span className="text-sm font-semibold text-slate-700 hidden sm:block">{userName}</span>
             </div>
           </div>
         </header>

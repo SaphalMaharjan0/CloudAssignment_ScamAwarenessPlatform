@@ -57,12 +57,16 @@ export default function DashboardLayout() {
     navigate('/login');
   };
 
-  const userInitials = user?.firstName && user?.lastName 
-    ? `${user.firstName[0]}${user.lastName[0]}`
-    : 'U';
-  const userName = user?.firstName && user?.lastName 
-    ? `${user.firstName} ${user.lastName}` 
-    : user?.email || 'User';
+  const nameParts = user?.name ? user.name.split(' ') : [];
+  const firstName = user?.firstName || nameParts[0] || '';
+  const lastName = user?.lastName || (nameParts.length > 1 ? nameParts[nameParts.length - 1] : '');
+  
+  const userInitials = firstName && lastName 
+    ? `${firstName[0]}${lastName[0]}`.toUpperCase()
+    : firstName ? firstName[0].toUpperCase() : 'U';
+  const userName = firstName && lastName 
+    ? `${firstName} ${lastName}` 
+    : user?.name || user?.email || 'User';
 
   return (
     <div className="flex h-screen bg-slate-50 overflow-hidden" style={{ fontFamily: "'Inter', sans-serif" }}>
