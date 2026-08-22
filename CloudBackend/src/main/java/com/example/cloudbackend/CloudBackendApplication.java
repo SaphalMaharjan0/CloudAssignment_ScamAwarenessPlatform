@@ -6,7 +6,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import org.springframework.scheduling.annotation.EnableAsync;
+
 @SpringBootApplication
+@EnableAsync
 public class CloudBackendApplication {
 
     public static void main(String[] args) {

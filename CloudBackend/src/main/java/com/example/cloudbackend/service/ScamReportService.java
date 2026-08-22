@@ -11,13 +11,22 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ScamReportService {
     private final ScamReportRepository repository;
+    private final NotificationService notificationService;
+
     public List<ScamReport> findAll() { return repository.findAll(); }
     public java.util.Optional<ScamReport> findById(String id) { return repository.findById(id); }
+    
     public ScamReport save(ScamReport report) { 
-        if (report.getId() == null) report.setId("RPT-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
-        return repository.save(report); 
+        boolean isNew = report.getId() == null;
+        if (isNew) report.setId("RPT-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
+        
+        ScamReport saved = repository.save(report); 
+        
+        if (isNew) {
+            notificationService.notifyAdminsOfNewReport(saved);
+        }
+        return saved;
     }
-
     public ScamReport update(String id, ScamReport updatedReport, String userEmail) {
         ScamReport existing = repository.findById(id).orElseThrow(() -> new IllegalArgumentException("Report not found"));
         if (!"Pending".equals(existing.getStatus())) {
@@ -52,10 +61,19 @@ public class ScamReportService {
 
     public ScamReport updateStatus(String id, String status, String adminFeedback) {
         ScamReport existing = repository.findById(id).orElseThrow(() -> new IllegalArgumentException("Report not found"));
+        boolean wasPending = "Pending".equals(existing.getStatus());
         existing.setStatus(status);
         if (adminFeedback != null) {
             existing.setAdminFeedback(adminFeedback);
         }
-        return repository.save(existing);
+        
+        ScamReport saved = repository.save(existing);
+        
+        // If it was just approved/verified and it's high risk, notify everyone
+        if (wasPending && "Verified".equals(status) && "High".equalsIgnoreCase(existing.getPriority())) {
+            notificationService.notifyAllUsersOfHighRiskReport(saved);
+        }
+        
+        return saved;
     }
 }
