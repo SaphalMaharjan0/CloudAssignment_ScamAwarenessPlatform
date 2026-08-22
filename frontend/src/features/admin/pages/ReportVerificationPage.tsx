@@ -4,6 +4,7 @@ import { ChevronLeft, CheckCircle2, XCircle, MessageSquare, Clock, User, Downloa
 import { scamReportApi } from '../../../api/scamReportApi';
 import { adminApi } from '../../../api/adminApi';
 import { ScamReport } from '../../../types/scamReport.types';
+import { sendCommunityScamAlert } from '../../../services/serverlessService';
 
 export default function ReportVerificationPage() {
   const { id } = useParams();
@@ -33,9 +34,20 @@ export default function ReportVerificationPage() {
     if (report && report.id) {
       try {
         await adminApi.updateReportStatus(report.id, 'Verified');
+        try {
+          await sendCommunityScamAlert(
+            report.title || "Verified Scam Alert",
+            report.description || "A new scam has been verified by administrators."
+          );
+          alert("Report verified and SNS Broadcast sent successfully!");
+        } catch (snsErr) {
+          console.error("Failed to send SNS broadcast", snsErr);
+          alert("Report verified, but SNS broadcast failed.");
+        }
         fetchReport();
       } catch (error) {
         console.error("Failed to approve report", error);
+        alert("Failed to approve report.");
       }
     }
   };
