@@ -29,7 +29,7 @@ public class ScamReport {
     private Double financialLoss = 0.0;
     @Column(name = "platform_used")
     private String platformUsed;
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "scam_report_documents", joinColumns = @JoinColumn(name = "scam_report_id"))
     @Column(name = "document_url", columnDefinition = "TEXT")
     private List<String> documentUrls;
