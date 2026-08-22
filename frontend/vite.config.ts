@@ -8,9 +8,9 @@ export default defineConfig({
     react(),
     tailwindcss(),
   ],
+  base: '/',
   build: {
-    // Output the React build directly into the Spring Boot static folder
-    outDir: '../CloudBackend/src/main/resources/static',
+    outDir: 'dist',
     emptyOutDir: true
   }
 })
