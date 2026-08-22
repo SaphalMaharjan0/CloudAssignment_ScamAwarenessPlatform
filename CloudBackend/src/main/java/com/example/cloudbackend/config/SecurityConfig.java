@@ -36,6 +36,8 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                .requestMatchers("/", "/index.html", "/assets/**", "/*.png", "/*.svg", "/*.ico").permitAll()
+                .requestMatchers("/app/**", "/admin/**", "/login", "/signup", "/forgot-password", "/database/**", "/articles/**", "/report/**").permitAll() // Allow frontend routes to be handled by React Router
                 .anyRequest().authenticated()
             )
             .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { NavLink, Outlet, useNavigate, Navigate } from 'react-router-dom';
 import { 
   Shield, 
   LayoutDashboard, 
@@ -24,8 +24,23 @@ export default function AdminLayout() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [pendingCount, setPendingCount] = useState(0);
   const [unreadCount, setUnreadCount] = useState(0);
+  const { logout, isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
 
+  // Redirect to login if not authenticated
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  // Double check admin role
+  const userRole = (user?.role || '').toUpperCase();
+  const authorities = (user as any)?.authorities || [];
+  const isAdmin = userRole === 'ADMIN' || userRole === 'ROLE_ADMIN' || 
+                  authorities.some((a: any) => a.authority === 'ROLE_ADMIN' || a.authority === 'ADMIN');
+
+  if (isAuthenticated && !isAdmin) {
+    return <Navigate to="/app/dashboard" replace />;
+  }
   useEffect(() => {
     const fetchCounts = async () => {
       try {
