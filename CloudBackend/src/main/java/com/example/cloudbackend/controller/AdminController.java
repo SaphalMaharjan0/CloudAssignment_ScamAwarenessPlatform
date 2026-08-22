@@ -33,29 +33,44 @@ public class AdminController {
         
         stats.setLatestPendingReports(scamReportRepository.findTop5ByStatusOrderByCreatedAtDesc("Pending"));
         
-        // Mock chart data for now, could be dynamic later
+        List<com.example.cloudbackend.entity.ScamReport> allReports = scamReportRepository.findAll();
+        List<User> allUsers = userRepository.findAll();
+        
+        // Generate last 6 months names
         List<Map<String, Object>> reportData = new ArrayList<>();
-        reportData.add(Map.of("name", "Jan", "reports", 140));
-        reportData.add(Map.of("name", "Feb", "reports", 180));
-        reportData.add(Map.of("name", "Mar", "reports", 200));
-        reportData.add(Map.of("name", "Apr", "reports", 170));
-        reportData.add(Map.of("name", "May", "reports", 260));
-        reportData.add(Map.of("name", "Jun", "reports", 310));
-        reportData.add(Map.of("name", "Jul", "reports", 290));
-        reportData.add(Map.of("name", "Aug", "reports", 330));
-        reportData.add(Map.of("name", "Sep", "reports", 295));
-        reportData.add(Map.of("name", "Oct", "reports", 390));
-        reportData.add(Map.of("name", "Nov", "reports", 375));
-        reportData.add(Map.of("name", "Dec", "reports", scamReportRepository.count())); // Use actual count for current month
-        stats.setReportData(reportData);
-
         List<Map<String, Object>> userGrowthData = new ArrayList<>();
-        userGrowthData.add(Map.of("name", "Jul", "users", 1200));
-        userGrowthData.add(Map.of("name", "Aug", "users", 1600));
-        userGrowthData.add(Map.of("name", "Sep", "users", 2000));
-        userGrowthData.add(Map.of("name", "Oct", "users", 2400));
-        userGrowthData.add(Map.of("name", "Nov", "users", 2900));
-        userGrowthData.add(Map.of("name", "Dec", "users", userRepository.count() > 3000 ? userRepository.count() : 3541));
+        java.time.LocalDate now = java.time.LocalDate.now();
+        java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("MMM");
+        
+        for (int i = 5; i >= 0; i--) {
+            java.time.LocalDate monthDate = now.minusMonths(i);
+            String monthName = monthDate.format(formatter);
+            int monthValue = monthDate.getMonthValue();
+            int yearValue = monthDate.getYear();
+            
+            long reportCount = allReports.stream().filter(r -> 
+                r.getCreatedAt() != null && 
+                r.getCreatedAt().getMonthValue() == monthValue && 
+                r.getCreatedAt().getYear() == yearValue
+            ).count();
+            
+            long userCount = allUsers.stream().filter(u -> 
+                u.getCreatedAt() != null && 
+                u.getCreatedAt().getMonthValue() == monthValue && 
+                u.getCreatedAt().getYear() == yearValue
+            ).count();
+            
+            // Note: For user growth, usually it's cumulative, but for simplicity we'll show new users per month or we can show cumulative. Let's show cumulative.
+            long cumulativeUsers = allUsers.stream().filter(u -> 
+                u.getCreatedAt() == null || 
+                u.getCreatedAt().toLocalDate().isBefore(monthDate.plusMonths(1).withDayOfMonth(1))
+            ).count();
+            
+            reportData.add(Map.of("name", monthName, "reports", reportCount));
+            userGrowthData.add(Map.of("name", monthName, "users", cumulativeUsers));
+        }
+        
+        stats.setReportData(reportData);
         stats.setUserGrowthData(userGrowthData);
 
         return ResponseEntity.ok(stats);

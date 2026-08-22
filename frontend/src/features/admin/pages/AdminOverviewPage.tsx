@@ -101,7 +101,7 @@ export default function AdminOverviewPage() {
           <div className="flex justify-between items-center mb-8">
             <div>
               <h3 className="font-bold text-slate-900">Reports Per Month</h3>
-              <p className="text-xs text-slate-500 mt-1">2024 full year</p>
+              <p className="text-xs text-slate-500 mt-1">Last 6 months</p>
             </div>
           </div>
           <div className="h-64">
@@ -124,7 +124,7 @@ export default function AdminOverviewPage() {
                   cursor={{ fill: '#f1f5f9' }}
                   contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                 />
-                <Bar dataKey="reports" fill="#2563eb" radius={[4, 4, 0, 0]} maxBarSize={40} />
+                <Bar dataKey="reports" fill="#2563eb" radius={[4, 4, 0, 0]} maxBarSize={40} isAnimationActive={false} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -157,7 +157,7 @@ export default function AdminOverviewPage() {
                 <Tooltip 
                   contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                 />
-                <Line type="monotone" dataKey="users" stroke="#10b981" strokeWidth={3} dot={false} activeDot={{ r: 6, fill: '#10b981', stroke: '#fff', strokeWidth: 2 }} />
+                <Line type="monotone" dataKey="users" stroke="#10b981" strokeWidth={3} dot={false} activeDot={{ r: 6, fill: '#10b981', stroke: '#fff', strokeWidth: 2 }} isAnimationActive={false} />
               </LineChart>
             </ResponsiveContainer>
           </div>

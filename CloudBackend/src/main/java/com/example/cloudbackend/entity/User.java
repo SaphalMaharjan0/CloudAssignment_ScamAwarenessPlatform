@@ -26,6 +26,9 @@ public class User implements UserDetails {
     
     private Boolean active = true;
     
+    @Column(name = "created_at", updatable = false)
+    private java.time.LocalDateTime createdAt = java.time.LocalDateTime.now();
+    
     public Boolean getActive() { return this.active; }
     public void setActive(Boolean active) { this.active = active; }
     
