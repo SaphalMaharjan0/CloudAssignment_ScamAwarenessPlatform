@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Search, Filter, Download, Eye, CheckCircle2, XCircle, ShieldAlert, ChevronRight, ChevronLeft, Clock } from 'lucide-react';
+import { Search, Filter, Download, Eye, CheckCircle2, XCircle, ShieldAlert, ChevronRight, ChevronLeft, Clock, Trash2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { scamReportApi } from '../../../api/scamReportApi';
 import { adminApi } from '../../../api/adminApi';
@@ -47,6 +47,16 @@ export default function AdminReportsPage() {
       fetchReports();
     } catch (error) {
       console.error("Failed to reject report", error);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!window.confirm("Are you sure you want to delete this report? This action cannot be undone.")) return;
+    try {
+      await scamReportApi.deleteReport(id);
+      fetchReports();
+    } catch (error) {
+      console.error("Failed to delete report", error);
     }
   };
 
@@ -174,11 +184,14 @@ export default function AdminReportsPage() {
                           <button onClick={() => report.id && handleApprove(report.id)} className="p-1.5 text-green-600 hover:bg-green-50 rounded-lg transition-colors" title="Approve">
                             <CheckCircle2 size={16} />
                           </button>
-                          <button onClick={() => report.id && handleReject(report.id)} className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Reject">
+                          <button onClick={() => report.id && handleReject(report.id)} className="p-1.5 text-orange-600 hover:bg-orange-50 rounded-lg transition-colors" title="Reject">
                             <XCircle size={16} />
                           </button>
                         </>
                       )}
+                      <button onClick={() => report.id && handleDelete(report.id)} className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Delete">
+                        <Trash2 size={16} />
+                      </button>
                     </div>
                   </td>
                 </tr>

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ChevronLeft, CheckCircle2, XCircle, MessageSquare, Clock, User, Download } from 'lucide-react';
+import { ChevronLeft, CheckCircle2, XCircle, MessageSquare, Clock, User, Download, Trash2 } from 'lucide-react';
 import { scamReportApi } from '../../../api/scamReportApi';
 import { adminApi } from '../../../api/adminApi';
 import { ScamReport } from '../../../types/scamReport.types';
@@ -47,6 +47,18 @@ export default function ReportVerificationPage() {
         fetchReport();
       } catch (error) {
         console.error("Failed to reject report", error);
+      }
+    }
+  };
+
+  const handleDelete = async () => {
+    if (report && report.id) {
+      if (!window.confirm("Are you sure you want to delete this report? This action cannot be undone.")) return;
+      try {
+        await scamReportApi.deleteReport(report.id);
+        navigate('/admin/reports');
+      } catch (error) {
+        console.error("Failed to delete report", error);
       }
     }
   };
@@ -156,6 +168,7 @@ export default function ReportVerificationPage() {
                 <button className="w-full flex items-center justify-center gap-2 py-3 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-xl font-bold transition-colors shadow-sm text-sm">
                   <MessageSquare size={18} /> Request More Info
                 </button>
+
               </div>
             </div>
           )}
@@ -169,6 +182,15 @@ export default function ReportVerificationPage() {
             ></textarea>
             <button className="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold transition-colors text-sm">
               Save Notes
+            </button>
+          </div>
+
+          {/* Danger Zone */}
+          <div className="bg-red-50 p-6 rounded-2xl border border-red-200 shadow-sm mt-6">
+            <h3 className="font-bold text-red-900 mb-2 text-sm">Danger Zone</h3>
+            <p className="text-red-700 text-xs mb-4">Permanently delete this report and all its associated evidence from the database.</p>
+            <button onClick={handleDelete} className="w-full flex items-center justify-center gap-2 py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold transition-colors shadow-sm text-sm">
+              <Trash2 size={18} /> Delete Report
             </button>
           </div>
 
