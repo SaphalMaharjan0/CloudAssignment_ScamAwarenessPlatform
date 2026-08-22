@@ -19,6 +19,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
     private final AuthenticationManager authenticationManager;
+    private final org.springframework.mail.javamail.JavaMailSender mailSender;
     
     public AuthResponse register(RegisterRequest request) {
         var user = new User();
@@ -47,10 +48,22 @@ public class AuthService {
             user.setResetOtpExpiry(java.time.LocalDateTime.now().plusMinutes(10));
             repository.save(user);
             
-            // In a real app, use JavaMailSender here.
-            System.out.println("==================================================");
-            System.out.println("PASSWORD RESET OTP FOR " + email + ": " + otp);
-            System.out.println("==================================================");
+            // Send the email
+            try {
+                org.springframework.mail.SimpleMailMessage message = new org.springframework.mail.SimpleMailMessage();
+                message.setFrom("saphalmhj123@gmail.com");
+                message.setTo(email);
+                message.setSubject("FraudGuard Password Reset OTP");
+                message.setText("Your OTP for password reset is: " + otp + "\n\nThis OTP will expire in 10 minutes.\nIf you did not request a password reset, please ignore this email.");
+                mailSender.send(message);
+                System.out.println("Email sent successfully to " + email);
+            } catch (Exception e) {
+                System.err.println("Failed to send email: " + e.getMessage());
+                // Fallback to console printing in case email fails
+                System.out.println("==================================================");
+                System.out.println("PASSWORD RESET OTP FOR " + email + ": " + otp);
+                System.out.println("==================================================");
+            }
         }
     }
     
