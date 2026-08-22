@@ -75,4 +75,17 @@ public class NotificationService {
             }
         }
     }
+
+    @Async
+    public void notifyAllUsersOfNewArticle(com.example.cloudbackend.entity.Article article) {
+        List<User> users = userRepository.findAll();
+        String subject = "New Article Published: " + article.getTitle();
+        String messageText = "A new article has been published on our platform: " + article.getTitle() + ".\n\n" +
+            "Please check it out to stay informed and aware of the latest scams.";
+        String actionUrl = "/articles"; 
+
+        for (User user : users) {
+            createAndSend(user, subject, messageText, actionUrl, "info");
+        }
+    }
 }
