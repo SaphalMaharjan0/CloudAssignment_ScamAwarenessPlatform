@@ -61,8 +61,6 @@ export default function AdminLayout() {
     return () => clearInterval(intervalId);
   }, []);
 
-  const { logout } = useAuth();
-
   const handleLogout = () => {
     logout();
     navigate('/login');
