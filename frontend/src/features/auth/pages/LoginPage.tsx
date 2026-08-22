@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Shield, Mail, Lock, Globe, ChevronLeft } from "lucide-react";
+import { Shield, Mail, Lock, Globe, ChevronLeft, Eye, EyeOff } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../../context/AuthContext";
 
@@ -10,6 +10,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -106,9 +107,12 @@ export default function LoginPage() {
                 <div className="relative">
                   <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                   <input value={password} onChange={e => setPassword(e.target.value)}
-                    className="w-full pl-9 pr-4 py-2.5 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
-                    placeholder="••••••••" type="password" required
+                    className="w-full pl-9 pr-10 py-2.5 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                    placeholder="••••••••" type={showPassword ? "text" : "password"} required
                   />
+                  <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none">
+                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
                 </div>
               </div>
               <button
@@ -131,9 +135,6 @@ export default function LoginPage() {
           <p className="mt-5 text-center text-sm text-slate-500">
             {"Don't have an account? "}
             <Link to="/signup" className="text-blue-600 font-semibold hover:text-blue-700">Create Account</Link>
-          </p>
-          <p className="mt-3 text-center text-xs text-slate-400">
-            <button onClick={() => navigate('/admin/overview')} className="text-slate-400 hover:text-slate-600 underline">Admin access</button>
           </p>
         </div>
       </div>
