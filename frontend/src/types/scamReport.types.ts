@@ -25,4 +25,5 @@ export interface ScamReport {
   documentUrls?: string[];
   createdAt?: string;
   updatedAt?: string;
+  adminFeedback?: string;
 }

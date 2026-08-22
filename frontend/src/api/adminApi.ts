@@ -23,8 +23,8 @@ export const adminApi = {
     return response.data;
   },
 
-  updateReportStatus: async (id: string, status: string): Promise<ScamReport> => {
-    const response = await axiosClient.put(`/admin/reports/${id}/status`, { status });
+  updateReportStatus: async (id: string, status: string, adminFeedback?: string): Promise<ScamReport> => {
+    const response = await axiosClient.put(`/admin/reports/${id}/status`, { status, adminFeedback });
     return response.data;
   },
 

@@ -96,6 +96,7 @@ export default function MyReportsPage() {
                       {report.status === 'Verified' && <CheckCircle2 size={10} />}
                       {report.status === 'Pending' && <Clock size={10} />}
                       {report.status === 'Rejected' && <XCircle size={10} />}
+                      {report.status === 'Deleted' && <Trash2 size={10} />}
                       {report.status}
                     </span>
 
@@ -106,7 +107,14 @@ export default function MyReportsPage() {
                   
                   <h3 className="font-bold text-slate-900 text-lg">{report.title}</h3>
                   
-                  <div className="flex items-center gap-4 text-xs font-medium text-slate-500">
+                  {report.adminFeedback && (report.status === 'Rejected' || report.status === 'Deleted') && (
+                    <div className="bg-slate-50 border border-slate-200 rounded-lg p-3 mt-2">
+                      <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Admin Feedback</p>
+                      <p className="text-sm text-slate-700">{report.adminFeedback}</p>
+                    </div>
+                  )}
+
+                  <div className="flex items-center gap-4 text-xs font-medium text-slate-500 mt-2">
                     <span className="flex items-center gap-1">
                       <Clock size={12} /> {report.createdAt ? new Date(report.createdAt).toLocaleDateString() : 'Unknown date'}
                     </span>

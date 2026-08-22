@@ -103,11 +103,12 @@ public class AdminController {
     @PutMapping("/reports/{id}/status")
     public ResponseEntity<?> updateReportStatus(@PathVariable String id, @RequestBody Map<String, String> body) {
         String status = body.get("status");
+        String adminFeedback = body.get("adminFeedback");
         if (status == null || status.isEmpty()) {
             return ResponseEntity.badRequest().body("Status is required");
         }
         try {
-            return ResponseEntity.ok(scamReportService.updateStatus(id, status));
+            return ResponseEntity.ok(scamReportService.updateStatus(id, status, adminFeedback));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }

@@ -42,8 +42,11 @@ export default function AdminReportsPage() {
   };
 
   const handleReject = async (id: string) => {
+    const reason = window.prompt("Please provide a reason for rejecting this report (this will be shown to the user):");
+    if (reason === null) return; // User cancelled
+    
     try {
-      await adminApi.updateReportStatus(id, 'Rejected');
+      await adminApi.updateReportStatus(id, 'Rejected', reason);
       fetchReports();
     } catch (error) {
       console.error("Failed to reject report", error);
@@ -51,9 +54,11 @@ export default function AdminReportsPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!window.confirm("Are you sure you want to delete this report? This action cannot be undone.")) return;
+    const reason = window.prompt("Please provide a reason for deleting this report (this will be shown to the user):");
+    if (reason === null) return; // User cancelled
+    
     try {
-      await scamReportApi.deleteReport(id);
+      await adminApi.updateReportStatus(id, 'Deleted', reason);
       fetchReports();
     } catch (error) {
       console.error("Failed to delete report", error);

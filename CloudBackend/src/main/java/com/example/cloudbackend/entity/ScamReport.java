@@ -33,6 +33,8 @@ public class ScamReport {
     @CollectionTable(name = "scam_report_documents", joinColumns = @JoinColumn(name = "scam_report_id"))
     @Column(name = "document_url", columnDefinition = "TEXT")
     private List<String> documentUrls;
+    @Column(name = "admin_feedback", columnDefinition = "TEXT")
+    private String adminFeedback;
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
     @Column(name = "updated_at")

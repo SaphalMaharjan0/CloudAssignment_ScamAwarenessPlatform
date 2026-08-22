@@ -50,9 +50,12 @@ public class ScamReportService {
         repository.delete(existing);
     }
 
-    public ScamReport updateStatus(String id, String status) {
+    public ScamReport updateStatus(String id, String status, String adminFeedback) {
         ScamReport existing = repository.findById(id).orElseThrow(() -> new IllegalArgumentException("Report not found"));
         existing.setStatus(status);
+        if (adminFeedback != null) {
+            existing.setAdminFeedback(adminFeedback);
+        }
         return repository.save(existing);
     }
 }
