@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Users, FileText, Clock, CheckCircle2, ChevronRight, ShieldAlert, Trash2 } from 'lucide-react';
+import { Users, FileText, Clock, CheckCircle2, ChevronRight, ShieldAlert, Trash2, XCircle } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
 import { adminApi, AdminStats } from '../../../api/adminApi';
 import { Link } from 'react-router-dom';
@@ -38,6 +38,18 @@ export default function AdminOverviewPage() {
       fetchStats();
     } catch (error) {
       console.error("Failed to reject report", error);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!window.confirm("Are you sure you want to delete this report? This action cannot be undone.")) return;
+    try {
+      // Need to import scamReportApi for this
+      const { scamReportApi } = await import('../../../api/scamReportApi');
+      await scamReportApi.deleteReport(id);
+      fetchStats();
+    } catch (error) {
+      console.error("Failed to delete report", error);
     }
   };
 
@@ -198,8 +210,13 @@ export default function AdminOverviewPage() {
                   </button>
                   <button 
                     onClick={() => report.id && handleReject(report.id)}
-                    className="flex-1 md:flex-none px-4 py-2 rounded-lg text-sm font-semibold text-red-700 bg-red-50 border border-red-200 hover:bg-red-100 transition-colors flex items-center justify-center gap-2">
-                    <Trash2 size={16} /> Reject
+                    className="flex-1 md:flex-none px-4 py-2 rounded-lg text-sm font-semibold text-orange-700 bg-orange-50 border border-orange-200 hover:bg-orange-100 transition-colors flex items-center justify-center gap-2">
+                    <XCircle size={16} /> Reject
+                  </button>
+                  <button 
+                    onClick={() => report.id && handleDelete(report.id)}
+                    className="flex-1 md:flex-none px-4 py-2 rounded-lg text-sm font-semibold text-red-700 bg-red-50 border border-red-200 hover:bg-red-100 transition-colors flex items-center justify-center gap-2" title="Delete">
+                    <Trash2 size={16} /> Delete
                   </button>
                 </div>
               </div>
