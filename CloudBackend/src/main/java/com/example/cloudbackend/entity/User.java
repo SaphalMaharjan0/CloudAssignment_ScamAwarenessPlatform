@@ -26,6 +26,12 @@ public class User implements UserDetails {
     
     private Boolean active = true;
     
+    @Column(name = "reset_otp")
+    private String resetOtp;
+    
+    @Column(name = "reset_otp_expiry")
+    private java.time.LocalDateTime resetOtpExpiry;
+    
     @Column(name = "created_at", updatable = false)
     private java.time.LocalDateTime createdAt = java.time.LocalDateTime.now();
     

@@ -6,6 +6,7 @@ import ScamDetailsPage from '../features/scamDatabase/pages/ScamDetailsPage';
 import ArticlesPage from '../features/articles/pages/ArticlesPage';
 import LoginPage from '../features/auth/pages/LoginPage';
 import RegisterPage from '../features/auth/pages/RegisterPage';
+import ForgotPasswordPage from '../features/auth/pages/ForgotPasswordPage';
 import ReportScamPage from '../features/scamReport/pages/ReportScamPage';
 import DashboardLayout from '../layouts/DashboardLayout';
 import UserDashboardPage from '../features/dashboard/pages/UserDashboardPage';
@@ -30,6 +31,7 @@ export default function AppRoutes() {
       <Route path="/articles" element={<ArticlesPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/signup" element={<RegisterPage />} />
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       
       <Route path="/app" element={<DashboardLayout />}>
         <Route path="dashboard" element={<UserDashboardPage />} />

@@ -36,4 +36,46 @@ public class AuthService {
         var jwt = jwtUtil.generateToken(user);
         return new AuthResponse(jwt, user);
     }
+    
+    public void forgotPassword(String email) {
+        var userOptional = repository.findByEmail(email);
+        if (userOptional.isPresent()) {
+            var user = userOptional.get();
+            // Generate 6 digit OTP
+            String otp = String.format("%06d", new java.util.Random().nextInt(999999));
+            user.setResetOtp(otp);
+            user.setResetOtpExpiry(java.time.LocalDateTime.now().plusMinutes(10));
+            repository.save(user);
+            
+            // In a real app, use JavaMailSender here.
+            System.out.println("==================================================");
+            System.out.println("PASSWORD RESET OTP FOR " + email + ": " + otp);
+            System.out.println("==================================================");
+        }
+    }
+    
+    public boolean verifyOtp(String email, String otp) {
+        var userOptional = repository.findByEmail(email);
+        if (userOptional.isPresent()) {
+            var user = userOptional.get();
+            if (user.getResetOtp() != null && user.getResetOtp().equals(otp)) {
+                if (user.getResetOtpExpiry() != null && user.getResetOtpExpiry().isAfter(java.time.LocalDateTime.now())) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    
+    public void resetPassword(String email, String otp, String newPassword) {
+        if (verifyOtp(email, otp)) {
+            var user = repository.findByEmail(email).get();
+            user.setPasswordHash(passwordEncoder.encode(newPassword));
+            user.setResetOtp(null);
+            user.setResetOtpExpiry(null);
+            repository.save(user);
+        } else {
+            throw new RuntimeException("Invalid or expired OTP");
+        }
+    }
 }
