@@ -8,9 +8,9 @@ public class FrontendController {
     
     // Forward all non-api routes to index.html so React Router can handle them
     @RequestMapping(value = {
-        "/", 
-        "/{x:[\\w\\-]+}", 
-        "/{x:^(?!api$).*$}/**/{y:[\\w\\-]+}"
+        "/",
+        "/login", "/signup", "/forgot-password", "/reset-password",
+        "/app/**", "/admin/**", "/database/**", "/articles/**", "/report/**"
     })
     public String forward() {
         return "forward:/index.html";
